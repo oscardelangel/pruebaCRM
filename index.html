@@ -2,16 +2,49 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Dashboard Inmobiliario - Prueba</title>
-    <style>
-        body { font-family: Arial, sans-serif; background-color: #f4f4f9; padding: 20px; }
-        .panel { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-    </style>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CRM Inmobiliario - Sistema de Gestión</title>
+    <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
-    <div class="panel">
-        <h1>Panel de Control</h1>
-        <p>Estado del sistema: <strong>Hola Mundo</strong> 🚀</p>
+    <div class="container">
+        <h1>🏢 CRM Inmobiliario</h1>
+        
+        <div class="menu-grid">
+            <!-- Botón 1: Actualizar sitio web (NO FUNCIONA AÚN) -->
+            <div class="menu-card card-web disabled" onclick="mostrarMensaje('Actualizar sitio web')">
+                <span class="menu-icon">🌐</span>
+                <h2>Actualizar Sitio Web</h2>
+                <p>Gestiona el contenido de la página web principal</p>
+                <span class="badge">Próximamente</span>
+            </div>
+
+            <!-- Botón 2: Contacto de clientes (SÍ FUNCIONA) -->
+            <a href="contactos.html" class="menu-card card-contactos">
+                <span class="menu-icon">📇</span>
+                <h2>Contacto de Clientes</h2>
+                <p>Gestiona todos tus clientes: crea, edita, busca y elimina contactos</p>
+                <span class="badge" style="background: #27ae60;">Activo ✅</span>
+            </a>
+
+            <!-- Botón 3: Propiedades (NO FUNCIONA AÚN) -->
+            <div class="menu-card card-propiedades disabled" onclick="mostrarMensaje('Propiedades')">
+                <span class="menu-icon">🏠</span>
+                <h2>Propiedades</h2>
+                <p>Administra tu catálogo de inmuebles</p>
+                <span class="badge">Próximamente</span>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p>Sistema CRM en construcción | Módulo de Contactos funcionando</p>
+        </div>
     </div>
+
+    <script>
+        function mostrarMensaje(modulo) {
+            alert(`🚧 Módulo "${modulo}" en desarrollo\nPróximamente estará disponible.`);
+        }
+    </script>
 </body>
 </html>
