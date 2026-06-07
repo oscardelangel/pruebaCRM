@@ -1,0 +1,26 @@
+# ========== SECRETOS Y CONFIGURACIÓN ==========
+# Archivo con claves de Supabase (NO SUBIR)
+js/supabase-config.js
+
+# Archivos de entorno
+.env
+.env.local
+
+# ========== ARCHIVOS DEL SISTEMA ==========
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ========== EDITORES ==========
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# ========== LOGS ==========
+*.log
+npm-debug.log*
+
+# ========== DEPENDENCIAS (si usas npm después) ==========
+node_modules/
+package-lock.json
