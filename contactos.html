@@ -11,12 +11,24 @@
 </head>
 <body>
     <div class="crm-container">
-        <!-- HEADER -->
+        
+        <!-- HEADER -->       
         <div class="crm-header">
-            <h1>📇 Gestión de Clientes</h1>
-            <p>Administra arrendatarios, dueños, inversionistas y compradores</p>
+            <div class="header-responsive">
+                <div class="header-info">
+                    <h1>📇 Gestión de Clientes</h1>
+                    <p>Administra arrendatarios, dueños, inversionistas y compradores</p>
+                </div>
+                <button id="logoutBtn" class="btn btn-secondary btn-sm">🚪 Cerrar sesión</button>
+            </div>
+            <div class="user-info-responsive">
+                <span id="userName"></span>
+                <span id="userRole" class="user-role"></span>
+            </div>
         </div>
-
+        
+        
+        
         <!-- ESTADÍSTICAS -->
         <div class="estadisticas">
             <div class="stat-card">

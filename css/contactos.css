@@ -216,4 +216,48 @@ body {
             align-items: flex-start;
         }
     }
+
+}
+
+/* Header responsivo */
+.header-responsive {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: 15px;
+    margin-bottom: 15px;
+}
+
+.header-info {
+    flex: 1;
+}
+
+.header-info h1 {
+    margin: 0 0 5px 0;
+}
+
+.header-info p {
+    margin: 0;
+}
+
+.user-info-responsive {
+    display: flex;
+    justify-content: flex-end;
+    gap: 15px;
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid rgba(255,255,255,0.2);
+}
+
+/* Responsive para móvil */
+@media (max-width: 768px) {
+    .header-responsive {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .user-info-responsive {
+        justify-content: flex-start;
+    }
 }

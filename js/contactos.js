@@ -1,17 +1,23 @@
+// ========== VERIFICAR SESIÓN ==========
+const usuarioActual = (function() {
+    const usuario = localStorage.getItem('usuario_actual');
+    if (!usuario) {
+        window.location.href = 'login.html';
+        return null;
+    }
+    return JSON.parse(usuario);
+})();
+
+if (!usuarioActual) {
+    throw new Error('Redirigiendo al login...');
+}
+
 // ========== DATOS GLOBALES ==========
 let clientes = [];
 let clienteEditandoId = null;
-let filtroRolesActivos = []; // Array de roles seleccionados en filtro
+let filtroRolesActivos = [];
 let filtroRecurrenteActivo = false;
 let textoBusqueda = '';
-
-// ========== INICIALIZACIÓN ==========
-document.addEventListener('DOMContentLoaded', function() {
-    cargarDatos();
-    renderizarLista();
-    actualizarEstadisticas();
-    configurarEventListeners();
-});
 
 // ========== CRUD PRINCIPAL ==========
 function cargarDatos() {
@@ -19,7 +25,7 @@ function cargarDatos() {
     if (guardado) {
         clientes = JSON.parse(guardado);
     } else {
-        // Datos de ejemplo para pruebas
+        // Datos de ejemplo con asesor_id correcto
         clientes = [
             {
                 id: 1,
@@ -32,7 +38,9 @@ function cargarDatos() {
                 ciudadPreferida: "Ciudad de México",
                 esRecurrente: false,
                 clienteDesde: "2024-01-15",
-                notasGenerales: "Busca departamento de 2 recámaras"
+                notasGenerales: "Busca departamento",
+                asesor_id: "user-asesor-001",
+                asesor_nombre: "María Gómez"
             },
             {
                 id: 2,
@@ -45,7 +53,9 @@ function cargarDatos() {
                 ciudadPreferida: "Guadalajara",
                 esRecurrente: true,
                 clienteDesde: "2023-06-10",
-                notasGenerales: "Dueña de propiedad en venta, busca comprar casa más grande"
+                notasGenerales: "Dueña de propiedad",
+                asesor_id: "user-asesor-002",
+                asesor_nombre: "Pedro López"
             },
             {
                 id: 3,
@@ -58,7 +68,9 @@ function cargarDatos() {
                 ciudadPreferida: "Monterrey",
                 esRecurrente: false,
                 clienteDesde: "2024-02-20",
-                notasGenerales: "Busca terrenos y naves industriales"
+                notasGenerales: "Busca terrenos",
+                asesor_id: "user-asesor-001",
+                asesor_nombre: "María Gómez"
             },
             {
                 id: 4,
@@ -71,7 +83,9 @@ function cargarDatos() {
                 ciudadPreferida: "Querétaro",
                 esRecurrente: true,
                 clienteDesde: "2023-01-05",
-                notasGenerales: "Cliente recurrente, ya rentó 2 propiedades con nosotros"
+                notasGenerales: "Cliente recurrente",
+                asesor_id: "user-admin-001",
+                asesor_nombre: "Carlos Patrón"
             }
         ];
         guardarDatos();
@@ -84,16 +98,13 @@ function guardarDatos() {
 
 function crearCliente(datos) {
     const nuevoId = clientes.length > 0 ? Math.max(...clientes.map(c => c.id)) + 1 : 1;
-    const nuevoCliente = {
-        id: nuevoId,
-        ...datos
-    };
+    const nuevoCliente = { id: nuevoId, ...datos };
     clientes.push(nuevoCliente);
     guardarDatos();
     renderizarLista();
     actualizarEstadisticas();
     cerrarModalCliente();
-    alert('✅ Cliente agregado exitosamente');
+    alert('✅ Cliente agregado');
 }
 
 function actualizarCliente(id, datos) {
@@ -135,11 +146,9 @@ function actualizarRolesHidden() {
 }
 
 function cargarRolesEnModal(roles) {
-    // Limpiar todos los botones
     document.querySelectorAll('.rol-btn').forEach(btn => {
         btn.classList.remove('active');
     });
-    // Activar los roles del cliente
     if (roles && Array.isArray(roles)) {
         roles.forEach(rol => {
             const boton = document.querySelector(`.rol-btn[data-rol="${rol}"]`);
@@ -155,24 +164,15 @@ function obtenerRolesDelModal() {
 }
 
 // ========== FILTRADO Y BÚSQUEDA ==========
-function aplicarFiltros() {
-    textoBusqueda = document.getElementById('buscador').value.toLowerCase();
-    
-    // Obtener roles activos en filtros
-    filtroRolesActivos = [];
-    document.querySelectorAll('.filtro-rol:checked').forEach(checkbox => {
-        filtroRolesActivos.push(checkbox.dataset.rol);
-    });
-    
-    filtroRecurrenteActivo = document.getElementById('filtroRecurrente').checked;
-    
-    renderizarLista();
-}
-
 function clientesFiltrados() {
     let resultado = [...clientes];
     
-    // Filtro por búsqueda (nombre, email, ciudad)
+    // FILTRO POR ASESOR (importante)
+    if (usuarioActual.rol !== 'admin') {
+        resultado = resultado.filter(c => c.asesor_id === usuarioActual.id);
+    }
+    
+    // Filtro por búsqueda
     if (textoBusqueda) {
         resultado = resultado.filter(c => 
             c.nombre.toLowerCase().includes(textoBusqueda) ||
@@ -181,7 +181,7 @@ function clientesFiltrados() {
         );
     }
     
-    // Filtro por roles (si hay roles seleccionados)
+    // Filtro por roles
     if (filtroRolesActivos.length > 0) {
         resultado = resultado.filter(c => 
             filtroRolesActivos.some(rol => c.roles && c.roles.includes(rol))
@@ -196,12 +196,25 @@ function clientesFiltrados() {
     return resultado;
 }
 
+function aplicarFiltros() {
+    textoBusqueda = document.getElementById('buscador').value.toLowerCase();
+    
+    filtroRolesActivos = [];
+    document.querySelectorAll('.filtro-rol:checked').forEach(checkbox => {
+        filtroRolesActivos.push(checkbox.dataset.rol);
+    });
+    
+    filtroRecurrenteActivo = document.getElementById('filtroRecurrente').checked;
+    
+    renderizarLista();
+}
+
 function renderizarLista() {
     const filtrados = clientesFiltrados();
     const listaDiv = document.getElementById('listaClientes');
     
     if (filtrados.length === 0) {
-        listaDiv.innerHTML = '<div class="vacio"><p>📭 No hay clientes que coincidan con los filtros</p></div>';
+        listaDiv.innerHTML = '<div class="vacio"><p>📭 No hay clientes</p></div>';
         return;
     }
     
@@ -210,13 +223,13 @@ function renderizarLista() {
             <div class="cliente-info">
                 <div class="cliente-nombre">
                     ${cliente.nombre}
-                    ${cliente.esRecurrente ? '<span class="badge badge-recurrente" style="margin-left: 10px;">🔄 Recurrente</span>' : ''}
+                    ${cliente.esRecurrente ? '<span class="badge badge-recurrente">🔄 Recurrente</span>' : ''}
                 </div>
                 <div class="cliente-detalle">
                     <span>📧 ${cliente.email}</span>
                     <span>📞 ${cliente.telefono || 'Sin teléfono'}</span>
                     <span>📍 ${cliente.ciudadPreferida || 'Sin ciudad'}</span>
-                    <span class="cliente-presupuesto">💰 ${formatearPresupuesto(cliente.presupuestoMin, cliente.presupuestoMax)}</span>
+                    <span>💰 ${formatearPresupuesto(cliente.presupuestoMin, cliente.presupuestoMax)}</span>
                 </div>
                 <div class="cliente-roles">
                     ${generarTagsRoles(cliente.roles)}
@@ -232,17 +245,13 @@ function renderizarLista() {
 
 function generarTagsRoles(roles) {
     if (!roles || roles.length === 0) return '<span style="color: gray;">Sin roles</span>';
-    
     const nombreRoles = {
         'arrendatario': '🏠 Arrendatario',
         'dueno': '👑 Dueño',
         'inversionista': '💰 Inversionista',
         'comprador': '🏷️ Comprador'
     };
-    
-    return roles.map(rol => 
-        `<span class="role-tag role-tag-${rol}">${nombreRoles[rol] || rol}</span>`
-    ).join('');
+    return roles.map(rol => `<span class="role-tag role-tag-${rol}">${nombreRoles[rol] || rol}</span>`).join('');
 }
 
 function formatearPresupuesto(min, max) {
@@ -254,22 +263,20 @@ function formatearPresupuesto(min, max) {
 
 // ========== ESTADÍSTICAS ==========
 function actualizarEstadisticas() {
-    const total = clientes.length;
-    const arrendatarios = clientes.filter(c => c.roles && c.roles.includes('arrendatario')).length;
-    const duenos = clientes.filter(c => c.roles && c.roles.includes('dueno')).length;
-    const inversionistas = clientes.filter(c => c.roles && c.roles.includes('inversionista')).length;
-    const compradores = clientes.filter(c => c.roles && c.roles.includes('comprador')).length;
-    const recurrentes = clientes.filter(c => c.esRecurrente === true).length;
+    let clientesVisibles = [...clientes];
+    if (usuarioActual.rol !== 'admin') {
+        clientesVisibles = clientesVisibles.filter(c => c.asesor_id === usuarioActual.id);
+    }
     
-    document.getElementById('totalClientes').textContent = total;
-    document.getElementById('totalArrendatarios').textContent = arrendatarios;
-    document.getElementById('totalDuenos').textContent = duenos;
-    document.getElementById('totalInversionistas').textContent = inversionistas;
-    document.getElementById('totalCompradores').textContent = compradores;
-    document.getElementById('totalRecurrentes').textContent = recurrentes;
+    document.getElementById('totalClientes').textContent = clientesVisibles.length;
+    document.getElementById('totalArrendatarios').textContent = clientesVisibles.filter(c => c.roles && c.roles.includes('arrendatario')).length;
+    document.getElementById('totalDuenos').textContent = clientesVisibles.filter(c => c.roles && c.roles.includes('dueno')).length;
+    document.getElementById('totalInversionistas').textContent = clientesVisibles.filter(c => c.roles && c.roles.includes('inversionista')).length;
+    document.getElementById('totalCompradores').textContent = clientesVisibles.filter(c => c.roles && c.roles.includes('comprador')).length;
+    document.getElementById('totalRecurrentes').textContent = clientesVisibles.filter(c => c.esRecurrente === true).length;
 }
 
-// ========== MODAL CLIENTE (CREAR/EDITAR) ==========
+// ========== MODALES ==========
 function abrirModalCrear() {
     clienteEditandoId = null;
     document.getElementById('modalTitulo').textContent = 'Nuevo Cliente';
@@ -306,7 +313,6 @@ function cerrarModalCliente() {
 }
 
 function guardarClienteDesdeModal() {
-    // Validar campos obligatorios
     const nombre = document.getElementById('nombre').value.trim();
     const email = document.getElementById('email').value.trim();
     
@@ -317,7 +323,7 @@ function guardarClienteDesdeModal() {
     
     const roles = obtenerRolesDelModal();
     if (roles.length === 0) {
-        alert('⚠️ Debes seleccionar al menos un rol para el cliente');
+        alert('⚠️ Debes seleccionar al menos un rol');
         return;
     }
     
@@ -331,7 +337,9 @@ function guardarClienteDesdeModal() {
         ciudadPreferida: document.getElementById('ciudadPreferida').value.trim(),
         esRecurrente: document.getElementById('esRecurrente').checked,
         clienteDesde: document.getElementById('clienteDesde').value,
-        notasGenerales: document.getElementById('notasGenerales').value.trim()
+        notasGenerales: document.getElementById('notasGenerales').value.trim(),
+        asesor_id: usuarioActual.id,
+        asesor_nombre: usuarioActual.nombre
     };
     
     if (clienteEditandoId) {
@@ -348,7 +356,7 @@ function abrirModalEliminar(id) {
     const cliente = clientes.find(c => c.id === id);
     if (cliente) {
         clienteAEliminarId = id;
-        document.getElementById('mensajeEliminar').textContent = `¿Estás seguro de eliminar a "${cliente.nombre}"?`;
+        document.getElementById('mensajeEliminar').textContent = `¿Eliminar a "${cliente.nombre}"?`;
         document.getElementById('modalEliminar').classList.add('active');
     }
 }
@@ -364,50 +372,59 @@ function confirmarEliminar() {
     }
 }
 
-// ========== EVENT LISTENERS ==========
-function configurarEventListeners() {
-    // Búsqueda
+// ========== CERRAR SESIÓN ==========
+function cerrarSesion() {
+    localStorage.removeItem('usuario_actual');
+    window.location.href = 'login.html';
+}
+
+// ========== MOSTRAR USUARIO EN HEADER ==========
+function mostrarUsuarioEnHeader() {
+    const userNameSpan = document.getElementById('userName');
+    const userRoleSpan = document.getElementById('userRole');
+    
+    if (userNameSpan) {
+        userNameSpan.textContent = usuarioActual.nombre || usuarioActual.email;
+    }
+    if (userRoleSpan) {
+        userRoleSpan.textContent = usuarioActual.rol === 'admin' ? '👑 Administrador' : '🏠 Asesor';
+    }
+}
+
+// ========== INICIALIZACIÓN ==========
+function inicializar() {
+    cargarDatos();
+    renderizarLista();
+    actualizarEstadisticas();
+    mostrarUsuarioEnHeader();
+    
+    // Event listeners
     document.getElementById('buscador').addEventListener('input', aplicarFiltros);
-    
-    // Filtros de roles
-    document.querySelectorAll('.filtro-rol').forEach(checkbox => {
-        checkbox.addEventListener('change', aplicarFiltros);
-    });
-    
-    // Filtro recurrente
+    document.querySelectorAll('.filtro-rol').forEach(cb => cb.addEventListener('change', aplicarFiltros));
     document.getElementById('filtroRecurrente').addEventListener('change', aplicarFiltros);
-    
-    // Limpiar filtros
     document.getElementById('limpiarFiltros').addEventListener('click', () => {
         document.getElementById('buscador').value = '';
         document.querySelectorAll('.filtro-rol').forEach(cb => cb.checked = false);
         document.getElementById('filtroRecurrente').checked = false;
         aplicarFiltros();
     });
-    
-    // Botón nuevo cliente
     document.getElementById('btnNuevoCliente').addEventListener('click', abrirModalCrear);
-    
-    // Modal cliente - cerrar
     document.getElementById('closeModal').addEventListener('click', cerrarModalCliente);
     document.getElementById('cancelarModal').addEventListener('click', cerrarModalCliente);
     document.getElementById('guardarCliente').addEventListener('click', guardarClienteDesdeModal);
-    
-    // Cerrar modal al hacer clic fuera
-    document.getElementById('modalCliente').addEventListener('click', (e) => {
-        if (e.target === document.getElementById('modalCliente')) {
-            cerrarModalCliente();
-        }
-    });
-    
-    // Modal eliminar
     document.getElementById('closeEliminarModal').addEventListener('click', cerrarModalEliminar);
     document.getElementById('cancelarEliminar').addEventListener('click', cerrarModalEliminar);
     document.getElementById('confirmarEliminar').addEventListener('click', confirmarEliminar);
+    document.getElementById('logoutBtn')?.addEventListener('click', cerrarSesion);
     
+    // Cerrar modal al hacer clic fuera
+    document.getElementById('modalCliente').addEventListener('click', (e) => {
+        if (e.target === document.getElementById('modalCliente')) cerrarModalCliente();
+    });
     document.getElementById('modalEliminar').addEventListener('click', (e) => {
-        if (e.target === document.getElementById('modalEliminar')) {
-            cerrarModalEliminar();
-        }
+        if (e.target === document.getElementById('modalEliminar')) cerrarModalEliminar();
     });
 }
+
+// Iniciar
+inicializar();
