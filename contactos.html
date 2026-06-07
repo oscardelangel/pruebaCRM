@@ -1,4 +1,235 @@
-<div class="menu-principal">
-    <a href="index.html" class="menu-btn">🏠 Inicio</a>
-    <a href="contactos.html" class="menu-btn" style="background: #3498db;">📇 Contactos</a>
-</div>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CRM Inmobiliario - Gestión de Clientes</title>
+    <!-- CSS -->
+    <link rel="stylesheet" href="css/variables.css">
+    <link rel="stylesheet" href="css/componentes.css">
+    <link rel="stylesheet" href="css/contactos.css">
+</head>
+<body>
+    <div class="crm-container">
+        <!-- HEADER -->
+        <div class="crm-header">
+            <h1>📇 Gestión de Clientes</h1>
+            <p>Administra arrendatarios, dueños, inversionistas y compradores</p>
+        </div>
+
+        <!-- ESTADÍSTICAS -->
+        <div class="estadisticas">
+            <div class="stat-card">
+                <h3>Total Clientes</h3>
+                <div class="stat-number" id="totalClientes">0</div>
+            </div>
+            <div class="stat-card">
+                <h3>🏠 Arrendatarios</h3>
+                <div class="stat-number" id="totalArrendatarios">0</div>
+            </div>
+            <div class="stat-card">
+                <h3>👑 Dueños</h3>
+                <div class="stat-number" id="totalDuenos">0</div>
+            </div>
+            <div class="stat-card">
+                <h3>💰 Inversionistas</h3>
+                <div class="stat-number" id="totalInversionistas">0</div>
+            </div>
+            <div class="stat-card">
+                <h3>🏷️ Compradores</h3>
+                <div class="stat-number" id="totalCompradores">0</div>
+            </div>
+            <div class="stat-card">
+                <h3>🔄 Recurrentes</h3>
+                <div class="stat-number" id="totalRecurrentes">0</div>
+            </div>
+        </div>
+
+        <!-- BARRA DE FILTROS -->
+        <div class="filtros-bar">
+            <div class="buscador">
+                <input type="text" id="buscador" placeholder="🔍 Buscar por nombre, email o ciudad...">
+            </div>
+            <div class="filtros-roles">
+                <label>
+                    <input type="checkbox" class="filtro-rol" data-rol="arrendatario"> 🏠 Arrendatarios
+                </label>
+                <label>
+                    <input type="checkbox" class="filtro-rol" data-rol="dueno"> 👑 Dueños
+                </label>
+                <label>
+                    <input type="checkbox" class="filtro-rol" data-rol="inversionista"> 💰 Inversionistas
+                </label>
+                <label>
+                    <input type="checkbox" class="filtro-rol" data-rol="comprador"> 🏷️ Compradores
+                </label>
+            </div>
+            <div class="filtro-recurrente">
+                <label>
+                    <input type="checkbox" id="filtroRecurrente"> 🔄 Solo recurrentes
+                </label>
+            </div>
+            <button class="btn btn-secondary btn-limpiar" id="limpiarFiltros">🗑️ Limpiar filtros</button>
+            <button class="btn btn-primary" id="btnNuevoCliente">➕ Nuevo Cliente</button>
+        </div>
+
+        <!-- LISTA DE CLIENTES -->
+        <div class="lista-clientes" id="listaClientes">
+            <div class="vacio">
+                <p>Cargando clientes...</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========== MODAL PARA CREAR/EDITAR CLIENTE ========== -->
+    <div id="modalCliente" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitulo">Nuevo Cliente</h2>
+                <button class="modal-close" id="closeModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="formCliente">
+                    <input type="hidden" id="clienteId">
+                    
+                    <!-- Datos personales -->
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="nombre">Nombre completo *</label>
+                            <input type="text" id="nombre" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="email">Email *</label>
+                            <input type="email" id="email" required>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="telefono">Teléfono</label>
+                            <input type="tel" id="telefono">
+                        </div>
+                    </div>
+                    
+                    <!-- ROLES (TAGS) -->
+                    <div class="form-group">
+                        <label>Roles del cliente * (puede seleccionar múltiples)</label>
+                        <div class="roles-container">
+                            <button type="button" class="rol-btn" data-rol="arrendatario">
+                                🏠 Arrendatario
+                            </button>
+                            <button type="button" class="rol-btn" data-rol="dueno">
+                                👑 Dueño
+                            </button>
+                            <button type="button" class="rol-btn" data-rol="inversionista">
+                                💰 Inversionista
+                            </button>
+                            <button type="button" class="rol-btn" data-rol="comprador">
+                                🏷️ Comprador
+                            </button>
+                        </div>
+                        <input type="hidden" id="roles" value="[]">
+                        <small style="color: var(--gray);">💡 Haz clic en los botones para activar múltiples roles</small>
+                    </div>
+                    
+                    <!-- Presupuestos -->
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="presupuestoMin">Presupuesto mínimo</label>
+                            <input type="number" id="presupuestoMin" placeholder="$">
+                        </div>
+                        <div class="form-group">
+                            <label for="presupuestoMax">Presupuesto máximo</label>
+                            <input type="number" id="presupuestoMax" placeholder="$">
+                        </div>
+                    </div>
+                    
+                    <!-- Ciudad y fecha -->
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="ciudadPreferida">Ciudad preferida</label>
+                            <input type="text" id="ciudadPreferida" placeholder="Ej: Ciudad de México, Guadalajara, Monterrey">
+                        </div>
+                        <div class="form-group">
+                            <label for="clienteDesde">Cliente desde</label>
+                            <input type="date" id="clienteDesde">
+                        </div>
+                    </div>
+                    
+                    <!-- Recurrente -->
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" id="esRecurrente"> Es cliente recurrente
+                        </label>
+                    </div>
+                    
+                    <!-- Notas -->
+                    <div class="form-group">
+                        <label for="notasGenerales">Notas generales</label>
+                        <textarea id="notasGenerales" rows="3" placeholder="Intereses, seguimiento, observaciones..."></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="cancelarModal">Cancelar</button>
+                <button class="btn btn-primary" id="guardarCliente">Guardar Cliente</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========== MODAL DE CONFIRMACIÓN PARA ELIMINAR ========== -->
+    <div id="modalEliminar" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Confirmar eliminación</h2>
+                <button class="modal-close" id="closeEliminarModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p id="mensajeEliminar">¿Estás seguro de eliminar este cliente?</p>
+                <p style="color: var(--danger); font-size: var(--font-size-sm);">⚠️ Esta acción no se puede deshacer.</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="cancelarEliminar">Cancelar</button>
+                <button class="btn btn-danger" id="confirmarEliminar">Sí, eliminar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript TEMPORAL (solo para probar que los tags funcionan visualmente) -->
+    <script>
+        // ========== ESTO ES SOLO PARA PRUEBA VISUAL ==========
+        // Verificar que los botones de roles alternan su clase 'active'
+        function toggleRol(boton) {
+            boton.classList.toggle('active');
+            
+            // Mostrar en consola qué roles están activos
+            const rolesActivos = [];
+            document.querySelectorAll('.rol-btn.active').forEach(btn => {
+                rolesActivos.push(btn.dataset.rol);
+            });
+            console.log('Roles activos:', rolesActivos);
+            
+            // Actualizar el campo hidden (para cuando hagamos el JS real)
+            document.getElementById('roles').value = JSON.stringify(rolesActivos);
+        }
+        
+        // Asignar el evento toggle a cada botón de rol
+        document.addEventListener('DOMContentLoaded', function() {
+            const botonesRol = document.querySelectorAll('.rol-btn');
+            botonesRol.forEach(boton => {
+                boton.onclick = function() { toggleRol(this); };
+            });
+            
+            console.log('✅ HTML de tags cargado correctamente');
+            console.log('✅ Los botones de roles alternan su color al hacer clic');
+        });
+        
+        // Funciones dummy para que no haya errores (se reemplazarán después)
+        document.getElementById('btnNuevoCliente').onclick = () => alert('Próximamente: formulario funcional');
+        document.getElementById('limpiarFiltros').onclick = () => console.log('Limpiar filtros');
+        document.getElementById('closeModal').onclick = () => document.getElementById('modalCliente').classList.remove('active');
+        document.getElementById('cancelarModal').onclick = () => document.getElementById('modalCliente').classList.remove('active');
+        document.getElementById('guardarCliente').onclick = () => alert('JS completo próximamente');
+    </script>
+</body>
+</html>
