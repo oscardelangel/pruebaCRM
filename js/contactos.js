@@ -230,6 +230,8 @@ function renderizarLista() {
                     <span>📞 ${cliente.telefono || 'Sin teléfono'}</span>
                     <span>📍 ${cliente.ciudadPreferida || 'Sin ciudad'}</span>
                     <span>💰 ${formatearPresupuesto(cliente.presupuestoMin, cliente.presupuestoMax)}</span>
+                    ${usuarioActual.rol === 'admin' && cliente.asesor_nombre ? 
+                    `<span>👤 Asesor: ${cliente.asesor_nombre}</span>` : ''}
                 </div>
                 <div class="cliente-roles">
                     ${generarTagsRoles(cliente.roles)}
@@ -275,6 +277,31 @@ function actualizarEstadisticas() {
     document.getElementById('totalCompradores').textContent = clientesVisibles.filter(c => c.roles && c.roles.includes('comprador')).length;
     document.getElementById('totalRecurrentes').textContent = clientesVisibles.filter(c => c.esRecurrente === true).length;
 }
+// ========== ADMIN: REASIGNAR ASESORES ==========
+function cargarListaAsesores() {
+    // Por ahora, asesores simulados
+    // TODO: Después vendrán de Supabase
+    const asesores = [
+        { id: "user-asesor-001", nombre: "María Gómez" },
+        { id: "user-asesor-002", nombre: "Pedro López" },
+        { id: "user-asesor-003", nombre: "Ana Martínez" }
+    ];
+    
+    const select = document.getElementById('asesorSelect');
+    if (select) {
+        select.innerHTML = '<option value="">Seleccionar asesor...</option>';
+        asesores.forEach(asesor => {
+            select.innerHTML += `<option value="${asesor.id}">${asesor.nombre}</option>`;
+        });
+    }
+}
+
+function mostrarCampoAsesor() {
+    const campo = document.getElementById('campoAsesor');
+    if (campo) {
+        campo.style.display = usuarioActual.rol === 'admin' ? 'block' : 'none';
+    }
+}
 
 // ========== MODALES ==========
 function abrirModalCrear() {
@@ -284,6 +311,14 @@ function abrirModalCrear() {
     document.getElementById('clienteId').value = '';
     document.getElementById('clienteDesde').value = new Date().toISOString().split('T')[0];
     cargarRolesEnModal([]);
+    
+    // Mostrar campo de asesor si es admin
+    mostrarCampoAsesor();
+    if (usuarioActual.rol === 'admin') {
+        cargarListaAsesores();
+        document.getElementById('asesorSelect').value = '';
+    }
+    
     document.getElementById('modalCliente').classList.add('active');
 }
 
@@ -304,6 +339,13 @@ function abrirModalEditar(id) {
     document.getElementById('esRecurrente').checked = cliente.esRecurrente || false;
     document.getElementById('notasGenerales').value = cliente.notasGenerales || '';
     cargarRolesEnModal(cliente.roles || []);
+    
+    // Mostrar campo de asesor si es admin
+    mostrarCampoAsesor();
+    if (usuarioActual.rol === 'admin') {
+        cargarListaAsesores();
+        document.getElementById('asesorSelect').value = cliente.asesor_id || '';
+    }
     
     document.getElementById('modalCliente').classList.add('active');
 }
@@ -327,6 +369,27 @@ function guardarClienteDesdeModal() {
         return;
     }
     
+    // ========== DETERMINAR ASESOR ==========
+    let asesorId;
+    let asesorNombre;
+    
+    if (usuarioActual.rol === 'admin') {
+        // Admin puede elegir el asesor del dropdown
+        const selectAsesor = document.getElementById('asesorSelect');
+        asesorId = selectAsesor.value;
+        const selectedOption = selectAsesor.options[selectAsesor.selectedIndex];
+        asesorNombre = selectedOption ? selectedOption.text : '';
+        
+        if (!asesorId) {
+            alert('⚠️ Debes asignar un asesor al cliente');
+            return;
+        }
+    } else {
+        // Asesor normal: se asigna a sí mismo
+        asesorId = usuarioActual.id;
+        asesorNombre = usuarioActual.nombre;
+    }
+    
     const datosCliente = {
         nombre: nombre,
         email: email,
@@ -338,8 +401,8 @@ function guardarClienteDesdeModal() {
         esRecurrente: document.getElementById('esRecurrente').checked,
         clienteDesde: document.getElementById('clienteDesde').value,
         notasGenerales: document.getElementById('notasGenerales').value.trim(),
-        asesor_id: usuarioActual.id,
-        asesor_nombre: usuarioActual.nombre
+        asesor_id: asesorId,
+        asesor_nombre: asesorNombre
     };
     
     if (clienteEditandoId) {
