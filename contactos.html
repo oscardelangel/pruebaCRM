@@ -195,41 +195,24 @@
         </div>
     </div>
 
-    <!-- JavaScript TEMPORAL (solo para probar que los tags funcionan visualmente) -->
+        <!-- JavaScript para conectar con clientes.js -->
     <script>
-        // ========== ESTO ES SOLO PARA PRUEBA VISUAL ==========
-        // Verificar que los botones de roles alternan su clase 'active'
-        function toggleRol(boton) {
-            boton.classList.toggle('active');
-            
-            // Mostrar en consola qué roles están activos
-            const rolesActivos = [];
-            document.querySelectorAll('.rol-btn.active').forEach(btn => {
-                rolesActivos.push(btn.dataset.rol);
-            });
-            console.log('Roles activos:', rolesActivos);
-            
-            // Actualizar el campo hidden (para cuando hagamos el JS real)
-            document.getElementById('roles').value = JSON.stringify(rolesActivos);
-        }
-        
-        // Asignar el evento toggle a cada botón de rol
+        // Esta función conecta los botones de roles con clientes.js
         document.addEventListener('DOMContentLoaded', function() {
+            // La función toggleRol está definida en clientes.js
             const botonesRol = document.querySelectorAll('.rol-btn');
             botonesRol.forEach(boton => {
-                boton.onclick = function() { toggleRol(this); };
+                boton.onclick = function() { 
+                    if (typeof toggleRol === 'function') {
+                        toggleRol(this); 
+                    }
+                };
             });
             
-            console.log('✅ HTML de tags cargado correctamente');
-            console.log('✅ Los botones de roles alternan su color al hacer clic');
+            console.log('✅ contactos.html listo, esperando clientes.js');
         });
-        
-        // Funciones dummy para que no haya errores (se reemplazarán después)
-        document.getElementById('btnNuevoCliente').onclick = () => alert('Próximamente: formulario funcional');
-        document.getElementById('limpiarFiltros').onclick = () => console.log('Limpiar filtros');
-        document.getElementById('closeModal').onclick = () => document.getElementById('modalCliente').classList.remove('active');
-        document.getElementById('cancelarModal').onclick = () => document.getElementById('modalCliente').classList.remove('active');
-        document.getElementById('guardarCliente').onclick = () => alert('JS completo próximamente');
     </script>
-</body>
+        <!-- JavaScript -->
+    <script src="js/contactos.js"></script>
+    </body>
 </html>
