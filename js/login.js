@@ -36,14 +36,13 @@ document.getElementById('loginForm').addEventListener('submit', async function(e
             .eq('email', email)
             .single();
         
-        const usuario = {
+      const usuario = {
             id: data.user.id,
             email: email,
             nombre: usuarioData?.nombre || email.split('@')[0],
             rol: usuarioData?.rol || 'asesor'
         };
-        // GUARDAR USUARIO LOCAL
-        localStorage.setItem('usuario_actual', JSON.stringify(usuario));
+        
         
         // MOSTRAR MENSAJE DE EXITO
         const btn = document.querySelector('.btn-login');

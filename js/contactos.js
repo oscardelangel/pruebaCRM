@@ -5,37 +5,31 @@ let usuarioActual = null;
 // Inicializar Supabase
 function initSupabase() {
     const SUPABASE_URL = 'https://lxdcuvfpfuoeyzzgxhqx.supabase.co';
-    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx4ZGN1dmZwZnVvZXl6emd4aHF4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA4MDAyNDMsImV4cCI6MjA5NjM3NjI0M30.dWjQaPjDMK6HLvXzkgMcvhxnhc8kOQZ9TOZmrvVjU14';
-     
-    
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx4ZGN1dmZwZnVvZXl6emd4aHF4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA4MDAyNDMsImV4cCI6MjA5NjM3NjI0M30.dWjQaPjDMK6HLvXzkgMcvhxnhc8kOQZ9TOZmrvVjU14';  
     supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 }
 
 // Verificar sesión y cargar usuario
 async function verificarSesion() {
-    const usuarioGuardado = localStorage.getItem('usuario_actual');
-    if (!usuarioGuardado) {
-        window.location.href = 'login.html';
-        return false;
-    }
+    // 1. Verificar sesión en Supabase Auth
+   const { data: { session } } = await supabaseClient.auth.getSession();
+
+    if (!session) return false;
     
-    usuarioActual = JSON.parse(usuarioGuardado);
+    const { data: { user } } = await supabaseClient.auth.getUser();
+    const { data: profile } = await supabaseClient
+        .from('usuarios')
+        .select('*')
+        .eq('user_uuid', user.id)
+        .single();
     
-    // Verificar sesión en Supabase
-    const { data: { session }, error } = await supabaseClient.auth.getSession();
-    
-    if (!session && !usuarioActual.rol === 'admin') {
-        // No hay sesión activa, redirigir
-        localStorage.removeItem('usuario_actual');
-        window.location.href = 'login.html';
-        return false;
-    }
-    
+    usuarioActual = profile;  // ✅ Guardas en memoria
     return true;
 }
 
+
 // ========== DATOS GLOBALES ==========
-let clientes = [];
+let clientesGlobales = [];
 let clienteEditandoId = null;
 let filtroRolesActivos = [];
 let filtroRecurrenteActivo = false;
@@ -45,12 +39,7 @@ let textoBusqueda = '';
 async function cargarDatos() {
     if (!supabaseClient) initSupabase();
     
-    // Aplicar filtro por asesor según el rol
     let query = supabaseClient.from('clientes').select('*');
-    
-    if (usuarioActual.rol !== 'admin') {
-        query = query.eq('asesor_id', usuarioActual.id);
-    }
     
     const { data, error } = await query;
     
@@ -60,7 +49,7 @@ async function cargarDatos() {
     }
     
     clientes = data || [];
-    renderizarLista();
+    cargarClientesDesdeSupabase();
     actualizarEstadisticas();
 }
 
@@ -120,11 +109,12 @@ async function eliminarCliente(id) {
     alert('🗑️ Cliente eliminado');
 }
 
+//ELIMUNE JAVASCRIPTS PARA CONECTAR CON CLIENTES.JS PERO OCUPABA ESTA FUNCION
 // ========== FUNCIONES DE ROLES (TAGS) ==========
-function toggleRol(boton) {
-    boton.classList.toggle('active');
-    actualizarRolesHidden();
-}
+//function toggleRol(boton) {
+//    boton.classList.toggle('active');
+//    actualizarRolesHidden();
+//}
 
 function actualizarRolesHidden() {
     const rolesActivos = [];
@@ -154,7 +144,7 @@ function obtenerRolesDelModal() {
 
 // ========== FILTRADO Y BÚSQUEDA ==========
 function clientesFiltrados() {
-    let resultado = [...clientes];
+    let resultado = [...clientesGlobales];
     
     // Filtro por búsqueda
     if (textoBusqueda) {
@@ -229,6 +219,29 @@ function renderizarLista() {
             </div>
         </div>
     `).join('');
+}
+
+async function cargarClientesDesdeSupabase() {
+    console.log("Cargando clientes desde Supabase...");
+    
+    try {
+        const { data: clientes, error } = await supabaseClient
+            .from('clientes')
+            .select('*')
+            .order('nombre', { ascending: true });
+        
+        if (error) throw error;
+        
+        clientesGlobales = clientes || [];
+        console.log(`✅ ${clientesGlobales.length} clientes cargados`);
+        
+        renderizarLista();
+        
+    } catch (error) {
+        console.error("Error cargando clientes:", error);
+        document.getElementById('listaClientes').innerHTML = 
+            '<div class="vacio"><p>❌ Error al cargar clientes</p></div>';
+    }
 }
 
 function escapeHtml(text) {
@@ -427,16 +440,24 @@ function confirmarEliminar() {
 }
 
 // ========== CERRAR SESIÓN ==========
-function cerrarSesion() {
-    localStorage.removeItem('usuario_actual');
-    supabaseClient.auth.signOut();
+async function cerrarSesion() {
+    
+    usuarioActual = null;
+    const { error } = await supabaseClient.auth.signOut();
     window.location.href = 'login.html';
 }
 
+
 // ========== MOSTRAR USUARIO EN HEADER ==========
 function mostrarUsuarioEnHeader() {
+    
     const userNameSpan = document.getElementById('userName');
     const userRoleSpan = document.getElementById('userRole');
+    
+    if (!usuarioActual) {
+        console.error("❌ usuarioActual es null, no se puede mostrar");
+        return;  // Salir para evitar error
+    }
     
     if (userNameSpan) {
         userNameSpan.textContent = usuarioActual.nombre || usuarioActual.email;

@@ -213,25 +213,8 @@
             </div>
         </div>
     </div>
-
-        <!-- JavaScript para conectar con clientes.js -->
-    <script>
-        // Esta función conecta los botones de roles con clientes.js
-        document.addEventListener('DOMContentLoaded', function() {
-            // La función toggleRol está definida en clientes.js
-            const botonesRol = document.querySelectorAll('.rol-btn');
-            botonesRol.forEach(boton => {
-                boton.onclick = function() { 
-                    if (typeof toggleRol === 'function') {
-                        toggleRol(this); 
-                    }
-                };
-            });
             
-            console.log('✅ contactos.html listo, esperando clientes.js');
-        });
-    </script>
-        <!-- JavaScript -->
+
     <!-- Supabase CDN -->
         <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
