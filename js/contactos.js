@@ -111,10 +111,10 @@ async function eliminarCliente(id) {
 
 //ELIMUNE JAVASCRIPTS PARA CONECTAR CON CLIENTES.JS PERO OCUPABA ESTA FUNCION
 // ========== FUNCIONES DE ROLES (TAGS) ==========
-//function toggleRol(boton) {
-//    boton.classList.toggle('active');
-//    actualizarRolesHidden();
-//}
+function toggleRol(boton) {
+    boton.classList.toggle('active');
+    actualizarRolesHidden();
+}
 
 function actualizarRolesHidden() {
     const rolesActivos = [];
@@ -125,6 +125,7 @@ function actualizarRolesHidden() {
 }
 
 function cargarRolesEnModal(roles) {
+    // 1. Limpiar todos los botones de roles (quitar clase 'active')
     document.querySelectorAll('.rol-btn').forEach(btn => {
         btn.classList.remove('active');
     });
@@ -287,24 +288,28 @@ async function cargarListaAsesores() {
     const { data, error } = await supabaseClient
         .from('usuarios')
         .select('id, nombre')
-        .eq('rol', 'asesor');
+        .eq('rol', 'asesor')
+        .order('nombre');
     
-    if (error) {
-        console.error('Error al cargar asesores:', error);
+    if (error) return [];
+    
+    const select = document.getElementById('asesorSelect');
+    if (!select) return [];
+    
+    if (!data || data.length === 0) {
+        select.innerHTML = '<option value="">No hay asesores disponibles</option>';
         return [];
     }
     
-    const select = document.getElementById('asesorSelect');
-    if (select) {
-        select.innerHTML = '<option value="">Seleccionar asesor...</option>';
-        data.forEach(asesor => {
-            select.innerHTML += `<option value="${asesor.id}">${asesor.nombre}</option>`;
-        });
-    }
+    select.innerHTML = '<option value="">Seleccionar asesor...</option>';
+    data.forEach(asesor => {
+        select.innerHTML += `<option value="${asesor.id}">${asesor.nombre}</option>`;
+    });
     
     return data;
 }
 
+//No necesito cambios solo es para mostrarCampoAsesor solo a admin
 function mostrarCampoAsesor() {
     const campo = document.getElementById('campoAsesor');
     if (campo) {
@@ -314,19 +319,30 @@ function mostrarCampoAsesor() {
 
 // ========== MODALES ==========
 function abrirModalCrear() {
+    // 1. Limpiar ID de edición (indica que es un cliente NUEVO, no edición)
     clienteEditandoId = null;
+    // 2. Cambiar título del modal
     document.getElementById('modalTitulo').textContent = 'Nuevo Cliente';
+    // 3. Limpiar TODO el formulario (resetear todos los campos)
     document.getElementById('formCliente').reset();
+    // 4. Limpiar campo oculto del ID (por si quedaba de una edición anterior)
     document.getElementById('clienteId').value = '';
+     // 5. Poner fecha actual en el campo "cliente desde"
     document.getElementById('clienteDesde').value = new Date().toISOString().split('T')[0];
+    // 6. Cargar roles vacíos (ningún rol seleccionado)
     cargarRolesEnModal([]);
-    
+    // 7. Mostrar el campo de selección de asesor (dependiendo del rol)
     mostrarCampoAsesor();
+
+    // 8. Si el usuario logueado es ADMIN
+    // Cargar la lista de asesores para asignar el cliente a uno
     if (usuarioActual.rol === 'admin') {
         cargarListaAsesores();
+    // Limpiar el select de asesores (ninguno seleccionado)
         document.getElementById('asesorSelect').value = '';
     }
     
+    // 9. Mostrar el modal (agregar clase 'active' para que se vea)
     document.getElementById('modalCliente').classList.add('active');
 }
 
