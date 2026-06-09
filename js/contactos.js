@@ -1,15 +1,37 @@
 // ========== VERIFICAR SESIÓN ==========
-const usuarioActual = (function() {
-    const usuario = localStorage.getItem('usuario_actual');
-    if (!usuario) {
-        window.location.href = 'login.html';
-        return null;
-    }
-    return JSON.parse(usuario);
-})();
+let supabaseClient = null;
+let usuarioActual = null;
 
-if (!usuarioActual) {
-    throw new Error('Redirigiendo al login...');
+// Inicializar Supabase
+function initSupabase() {
+    const SUPABASE_URL = 'https://lxdcuvfpfuoeyzzgxhqx.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx4ZGN1dmZwZnVvZXl6emd4aHF4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA4MDAyNDMsImV4cCI6MjA5NjM3NjI0M30.dWjQaPjDMK6HLvXzkgMcvhxnhc8kOQZ9TOZmrvVjU14';
+     
+    
+    supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+}
+
+// Verificar sesión y cargar usuario
+async function verificarSesion() {
+    const usuarioGuardado = localStorage.getItem('usuario_actual');
+    if (!usuarioGuardado) {
+        window.location.href = 'login.html';
+        return false;
+    }
+    
+    usuarioActual = JSON.parse(usuarioGuardado);
+    
+    // Verificar sesión en Supabase
+    const { data: { session }, error } = await supabaseClient.auth.getSession();
+    
+    if (!session && !usuarioActual.rol === 'admin') {
+        // No hay sesión activa, redirigir
+        localStorage.removeItem('usuario_actual');
+        window.location.href = 'login.html';
+        return false;
+    }
+    
+    return true;
 }
 
 // ========== DATOS GLOBALES ==========
@@ -19,116 +41,83 @@ let filtroRolesActivos = [];
 let filtroRecurrenteActivo = false;
 let textoBusqueda = '';
 
-// ========== CRUD PRINCIPAL ==========
-function cargarDatos() {
-    const guardado = localStorage.getItem('clientes_inmobiliaria');
-    if (guardado) {
-        clientes = JSON.parse(guardado);
-    } else {
-        // Datos de ejemplo con asesor_id correcto
-        clientes = [
-            {
-                id: 1,
-                nombre: "Juan Pérez",
-                email: "juan@email.com",
-                telefono: "555-1234",
-                roles: ["arrendatario"],
-                presupuestoMin: 500000,
-                presupuestoMax: 800000,
-                ciudadPreferida: "Ciudad de México",
-                esRecurrente: false,
-                clienteDesde: "2024-01-15",
-                notasGenerales: "Busca departamento",
-                asesor_id: "user-asesor-001",
-                asesor_nombre: "María Gómez"
-            },
-            {
-                id: 2,
-                nombre: "María García",
-                email: "maria@email.com",
-                telefono: "555-5678",
-                roles: ["dueno", "comprador"],
-                presupuestoMin: 2000000,
-                presupuestoMax: 3000000,
-                ciudadPreferida: "Guadalajara",
-                esRecurrente: true,
-                clienteDesde: "2023-06-10",
-                notasGenerales: "Dueña de propiedad",
-                asesor_id: "user-asesor-002",
-                asesor_nombre: "Pedro López"
-            },
-            {
-                id: 3,
-                nombre: "Carlos López",
-                email: "carlos@email.com",
-                telefono: "555-9012",
-                roles: ["inversionista"],
-                presupuestoMin: 5000000,
-                presupuestoMax: 10000000,
-                ciudadPreferida: "Monterrey",
-                esRecurrente: false,
-                clienteDesde: "2024-02-20",
-                notasGenerales: "Busca terrenos",
-                asesor_id: "user-asesor-001",
-                asesor_nombre: "María Gómez"
-            },
-            {
-                id: 4,
-                nombre: "Ana Martínez",
-                email: "ana@email.com",
-                telefono: "555-3456",
-                roles: ["arrendatario", "comprador"],
-                presupuestoMin: 800000,
-                presupuestoMax: 1200000,
-                ciudadPreferida: "Querétaro",
-                esRecurrente: true,
-                clienteDesde: "2023-01-05",
-                notasGenerales: "Cliente recurrente",
-                asesor_id: "user-admin-001",
-                asesor_nombre: "Carlos Patrón"
-            }
-        ];
-        guardarDatos();
+// ========== CRUD CON SUPABASE ==========
+async function cargarDatos() {
+    if (!supabaseClient) initSupabase();
+    
+    // Aplicar filtro por asesor según el rol
+    let query = supabaseClient.from('clientes').select('*');
+    
+    if (usuarioActual.rol !== 'admin') {
+        query = query.eq('asesor_id', usuarioActual.id);
     }
-}
-
-function guardarDatos() {
-    localStorage.setItem('clientes_inmobiliaria', JSON.stringify(clientes));
-}
-
-function crearCliente(datos) {
-    const nuevoId = clientes.length > 0 ? Math.max(...clientes.map(c => c.id)) + 1 : 1;
-    const nuevoCliente = { id: nuevoId, ...datos };
-    clientes.push(nuevoCliente);
-    guardarDatos();
+    
+    const { data, error } = await query;
+    
+    if (error) {
+        console.error('Error al cargar clientes:', error);
+        return;
+    }
+    
+    clientes = data || [];
     renderizarLista();
     actualizarEstadisticas();
+}
+
+async function crearCliente(datos) {
+    const { data, error } = await supabaseClient
+        .from('clientes')
+        .insert([datos])
+        .select();
+    
+    if (error) {
+        console.error('Error al crear:', error);
+        alert('❌ Error al guardar: ' + error.message);
+        return false;
+    }
+    
+    await cargarDatos();
     cerrarModalCliente();
-    alert('✅ Cliente agregado');
+    alert('✅ Cliente agregado exitosamente');
+    return true;
 }
 
-function actualizarCliente(id, datos) {
-    const index = clientes.findIndex(c => c.id === id);
-    if (index !== -1) {
-        clientes[index] = { id, ...datos };
-        guardarDatos();
-        renderizarLista();
-        actualizarEstadisticas();
-        cerrarModalCliente();
-        alert('✏️ Cliente actualizado');
+async function actualizarCliente(id, datos) {
+    const { error } = await supabaseClient
+        .from('clientes')
+        .update(datos)
+        .eq('id', id);
+    
+    if (error) {
+        console.error('Error al actualizar:', error);
+        alert('❌ Error al actualizar: ' + error.message);
+        return false;
     }
+    
+    await cargarDatos();
+    cerrarModalCliente();
+    alert('✏️ Cliente actualizado');
+    return true;
 }
 
-function eliminarCliente(id) {
+async function eliminarCliente(id) {
     const cliente = clientes.find(c => c.id === id);
-    if (confirm(`¿Eliminar a ${cliente.nombre}?`)) {
-        clientes = clientes.filter(c => c.id !== id);
-        guardarDatos();
-        renderizarLista();
-        actualizarEstadisticas();
-        cerrarModalEliminar();
-        alert('🗑️ Cliente eliminado');
+    if (!confirm(`¿Eliminar a ${cliente.nombre}?`)) return;
+    
+    const { error } = await supabaseClient
+        .from('clientes')
+        .delete()
+        .eq('id', id);
+    
+    if (error) {
+        console.error('Error al eliminar:', error);
+        alert('❌ Error al eliminar: ' + error.message);
+        return;
     }
+    
+    await cargarDatos();
+    cerrarModalEliminar();
+    alert('🗑️ Cliente eliminado');
 }
 
 // ========== FUNCIONES DE ROLES (TAGS) ==========
@@ -167,17 +156,12 @@ function obtenerRolesDelModal() {
 function clientesFiltrados() {
     let resultado = [...clientes];
     
-    // FILTRO POR ASESOR (importante)
-    if (usuarioActual.rol !== 'admin') {
-        resultado = resultado.filter(c => c.asesor_id === usuarioActual.id);
-    }
-    
     // Filtro por búsqueda
     if (textoBusqueda) {
         resultado = resultado.filter(c => 
-            c.nombre.toLowerCase().includes(textoBusqueda) ||
-            c.email.toLowerCase().includes(textoBusqueda) ||
-            (c.ciudadPreferida && c.ciudadPreferida.toLowerCase().includes(textoBusqueda))
+            c.nombre?.toLowerCase().includes(textoBusqueda) ||
+            c.email?.toLowerCase().includes(textoBusqueda) ||
+            (c.ciudad_preferida && c.ciudad_preferida.toLowerCase().includes(textoBusqueda))
         );
     }
     
@@ -190,21 +174,21 @@ function clientesFiltrados() {
     
     // Filtro por recurrente
     if (filtroRecurrenteActivo) {
-        resultado = resultado.filter(c => c.esRecurrente === true);
+        resultado = resultado.filter(c => c.es_recurrente === true);
     }
     
     return resultado;
 }
 
 function aplicarFiltros() {
-    textoBusqueda = document.getElementById('buscador').value.toLowerCase();
+    textoBusqueda = document.getElementById('buscador')?.value.toLowerCase() || '';
     
     filtroRolesActivos = [];
     document.querySelectorAll('.filtro-rol:checked').forEach(checkbox => {
         filtroRolesActivos.push(checkbox.dataset.rol);
     });
     
-    filtroRecurrenteActivo = document.getElementById('filtroRecurrente').checked;
+    filtroRecurrenteActivo = document.getElementById('filtroRecurrente')?.checked || false;
     
     renderizarLista();
 }
@@ -212,6 +196,8 @@ function aplicarFiltros() {
 function renderizarLista() {
     const filtrados = clientesFiltrados();
     const listaDiv = document.getElementById('listaClientes');
+    
+    if (!listaDiv) return;
     
     if (filtrados.length === 0) {
         listaDiv.innerHTML = '<div class="vacio"><p>📭 No hay clientes</p></div>';
@@ -222,16 +208,16 @@ function renderizarLista() {
         <div class="cliente-item">
             <div class="cliente-info">
                 <div class="cliente-nombre">
-                    ${cliente.nombre}
-                    ${cliente.esRecurrente ? '<span class="badge badge-recurrente">🔄 Recurrente</span>' : ''}
+                    ${escapeHtml(cliente.nombre)}
+                    ${cliente.es_recurrente ? '<span class="badge badge-recurrente">🔄 Recurrente</span>' : ''}
                 </div>
                 <div class="cliente-detalle">
-                    <span>📧 ${cliente.email}</span>
-                    <span>📞 ${cliente.telefono || 'Sin teléfono'}</span>
-                    <span>📍 ${cliente.ciudadPreferida || 'Sin ciudad'}</span>
-                    <span>💰 ${formatearPresupuesto(cliente.presupuestoMin, cliente.presupuestoMax)}</span>
+                    <span>📧 ${escapeHtml(cliente.email)}</span>
+                    <span>📞 ${escapeHtml(cliente.telefono || 'Sin teléfono')}</span>
+                    <span>📍 ${escapeHtml(cliente.ciudad_preferida || 'Sin ciudad')}</span>
+                    <span>💰 ${formatearPresupuesto(cliente.presupuesto_min, cliente.presupuesto_max)}</span>
                     ${usuarioActual.rol === 'admin' && cliente.asesor_nombre ? 
-                    `<span>👤 Asesor: ${cliente.asesor_nombre}</span>` : ''}
+                        `<span>👤 Asesor: ${escapeHtml(cliente.asesor_nombre)}</span>` : ''}
                 </div>
                 <div class="cliente-roles">
                     ${generarTagsRoles(cliente.roles)}
@@ -243,6 +229,16 @@ function renderizarLista() {
             </div>
         </div>
     `).join('');
+}
+
+function escapeHtml(text) {
+    if (!text) return '';
+    return text.replace(/[&<>]/g, function(m) {
+        if (m === '&') return '&amp;';
+        if (m === '<') return '&lt;';
+        if (m === '>') return '&gt;';
+        return m;
+    });
 }
 
 function generarTagsRoles(roles) {
@@ -265,35 +261,35 @@ function formatearPresupuesto(min, max) {
 
 // ========== ESTADÍSTICAS ==========
 function actualizarEstadisticas() {
-    let clientesVisibles = [...clientes];
-    if (usuarioActual.rol !== 'admin') {
-        clientesVisibles = clientesVisibles.filter(c => c.asesor_id === usuarioActual.id);
-    }
-    
-    document.getElementById('totalClientes').textContent = clientesVisibles.length;
-    document.getElementById('totalArrendatarios').textContent = clientesVisibles.filter(c => c.roles && c.roles.includes('arrendatario')).length;
-    document.getElementById('totalDuenos').textContent = clientesVisibles.filter(c => c.roles && c.roles.includes('dueno')).length;
-    document.getElementById('totalInversionistas').textContent = clientesVisibles.filter(c => c.roles && c.roles.includes('inversionista')).length;
-    document.getElementById('totalCompradores').textContent = clientesVisibles.filter(c => c.roles && c.roles.includes('comprador')).length;
-    document.getElementById('totalRecurrentes').textContent = clientesVisibles.filter(c => c.esRecurrente === true).length;
+    document.getElementById('totalClientes').textContent = clientes.length;
+    document.getElementById('totalArrendatarios').textContent = clientes.filter(c => c.roles && c.roles.includes('arrendatario')).length;
+    document.getElementById('totalDuenos').textContent = clientes.filter(c => c.roles && c.roles.includes('dueno')).length;
+    document.getElementById('totalInversionistas').textContent = clientes.filter(c => c.roles && c.roles.includes('inversionista')).length;
+    document.getElementById('totalCompradores').textContent = clientes.filter(c => c.roles && c.roles.includes('comprador')).length;
+    document.getElementById('totalRecurrentes').textContent = clientes.filter(c => c.es_recurrente === true).length;
 }
-// ========== ADMIN: REASIGNAR ASESORES ==========
-function cargarListaAsesores() {
-    // Por ahora, asesores simulados
-    // TODO: Después vendrán de Supabase
-    const asesores = [
-        { id: "user-asesor-001", nombre: "María Gómez" },
-        { id: "user-asesor-002", nombre: "Pedro López" },
-        { id: "user-asesor-003", nombre: "Ana Martínez" }
-    ];
+
+// ========== CARGAR ASESORES (para admin) ==========
+async function cargarListaAsesores() {
+    const { data, error } = await supabaseClient
+        .from('usuarios')
+        .select('id, nombre')
+        .eq('rol', 'asesor');
+    
+    if (error) {
+        console.error('Error al cargar asesores:', error);
+        return [];
+    }
     
     const select = document.getElementById('asesorSelect');
     if (select) {
         select.innerHTML = '<option value="">Seleccionar asesor...</option>';
-        asesores.forEach(asesor => {
+        data.forEach(asesor => {
             select.innerHTML += `<option value="${asesor.id}">${asesor.nombre}</option>`;
         });
     }
+    
+    return data;
 }
 
 function mostrarCampoAsesor() {
@@ -312,7 +308,6 @@ function abrirModalCrear() {
     document.getElementById('clienteDesde').value = new Date().toISOString().split('T')[0];
     cargarRolesEnModal([]);
     
-    // Mostrar campo de asesor si es admin
     mostrarCampoAsesor();
     if (usuarioActual.rol === 'admin') {
         cargarListaAsesores();
@@ -329,18 +324,17 @@ function abrirModalEditar(id) {
     clienteEditandoId = id;
     document.getElementById('modalTitulo').textContent = 'Editar Cliente';
     document.getElementById('clienteId').value = cliente.id;
-    document.getElementById('nombre').value = cliente.nombre;
-    document.getElementById('email').value = cliente.email;
+    document.getElementById('nombre').value = cliente.nombre || '';
+    document.getElementById('email').value = cliente.email || '';
     document.getElementById('telefono').value = cliente.telefono || '';
-    document.getElementById('presupuestoMin').value = cliente.presupuestoMin || '';
-    document.getElementById('presupuestoMax').value = cliente.presupuestoMax || '';
-    document.getElementById('ciudadPreferida').value = cliente.ciudadPreferida || '';
-    document.getElementById('clienteDesde').value = cliente.clienteDesde || '';
-    document.getElementById('esRecurrente').checked = cliente.esRecurrente || false;
-    document.getElementById('notasGenerales').value = cliente.notasGenerales || '';
+    document.getElementById('presupuestoMin').value = cliente.presupuesto_min || '';
+    document.getElementById('presupuestoMax').value = cliente.presupuesto_max || '';
+    document.getElementById('ciudadPreferida').value = cliente.ciudad_preferida || '';
+    document.getElementById('clienteDesde').value = cliente.cliente_desde || '';
+    document.getElementById('esRecurrente').checked = cliente.es_recurrente || false;
+    document.getElementById('notasGenerales').value = cliente.notas_generales || '';
     cargarRolesEnModal(cliente.roles || []);
     
-    // Mostrar campo de asesor si es admin
     mostrarCampoAsesor();
     if (usuarioActual.rol === 'admin') {
         cargarListaAsesores();
@@ -354,7 +348,7 @@ function cerrarModalCliente() {
     document.getElementById('modalCliente').classList.remove('active');
 }
 
-function guardarClienteDesdeModal() {
+async function guardarClienteDesdeModal() {
     const nombre = document.getElementById('nombre').value.trim();
     const email = document.getElementById('email').value.trim();
     
@@ -369,12 +363,10 @@ function guardarClienteDesdeModal() {
         return;
     }
     
-    // ========== DETERMINAR ASESOR ==========
     let asesorId;
     let asesorNombre;
     
     if (usuarioActual.rol === 'admin') {
-        // Admin puede elegir el asesor del dropdown
         const selectAsesor = document.getElementById('asesorSelect');
         asesorId = selectAsesor.value;
         const selectedOption = selectAsesor.options[selectAsesor.selectedIndex];
@@ -385,7 +377,6 @@ function guardarClienteDesdeModal() {
             return;
         }
     } else {
-        // Asesor normal: se asigna a sí mismo
         asesorId = usuarioActual.id;
         asesorNombre = usuarioActual.nombre;
     }
@@ -395,20 +386,20 @@ function guardarClienteDesdeModal() {
         email: email,
         telefono: document.getElementById('telefono').value.trim(),
         roles: roles,
-        presupuestoMin: parseInt(document.getElementById('presupuestoMin').value) || null,
-        presupuestoMax: parseInt(document.getElementById('presupuestoMax').value) || null,
-        ciudadPreferida: document.getElementById('ciudadPreferida').value.trim(),
-        esRecurrente: document.getElementById('esRecurrente').checked,
-        clienteDesde: document.getElementById('clienteDesde').value,
-        notasGenerales: document.getElementById('notasGenerales').value.trim(),
+        presupuesto_min: parseInt(document.getElementById('presupuestoMin').value) || null,
+        presupuesto_max: parseInt(document.getElementById('presupuestoMax').value) || null,
+        ciudad_preferida: document.getElementById('ciudadPreferida').value.trim(),
+        es_recurrente: document.getElementById('esRecurrente').checked,
+        cliente_desde: document.getElementById('clienteDesde').value,
+        notas_generales: document.getElementById('notasGenerales').value.trim(),
         asesor_id: asesorId,
         asesor_nombre: asesorNombre
     };
     
     if (clienteEditandoId) {
-        actualizarCliente(clienteEditandoId, datosCliente);
+        await actualizarCliente(clienteEditandoId, datosCliente);
     } else {
-        crearCliente(datosCliente);
+        await crearCliente(datosCliente);
     }
 }
 
@@ -438,6 +429,7 @@ function confirmarEliminar() {
 // ========== CERRAR SESIÓN ==========
 function cerrarSesion() {
     localStorage.removeItem('usuario_actual');
+    supabaseClient.auth.signOut();
     window.location.href = 'login.html';
 }
 
@@ -455,36 +447,38 @@ function mostrarUsuarioEnHeader() {
 }
 
 // ========== INICIALIZACIÓN ==========
-function inicializar() {
-    cargarDatos();
-    renderizarLista();
-    actualizarEstadisticas();
+async function inicializar() {
+    initSupabase();
+    
+    const sesionValida = await verificarSesion();
+    if (!sesionValida) return;
+    
+    await cargarDatos();
     mostrarUsuarioEnHeader();
     
     // Event listeners
-    document.getElementById('buscador').addEventListener('input', aplicarFiltros);
+    document.getElementById('buscador')?.addEventListener('input', aplicarFiltros);
     document.querySelectorAll('.filtro-rol').forEach(cb => cb.addEventListener('change', aplicarFiltros));
-    document.getElementById('filtroRecurrente').addEventListener('change', aplicarFiltros);
-    document.getElementById('limpiarFiltros').addEventListener('click', () => {
-        document.getElementById('buscador').value = '';
+    document.getElementById('filtroRecurrente')?.addEventListener('change', aplicarFiltros);
+    document.getElementById('limpiarFiltros')?.addEventListener('click', () => {
+        if (document.getElementById('buscador')) document.getElementById('buscador').value = '';
         document.querySelectorAll('.filtro-rol').forEach(cb => cb.checked = false);
-        document.getElementById('filtroRecurrente').checked = false;
+        if (document.getElementById('filtroRecurrente')) document.getElementById('filtroRecurrente').checked = false;
         aplicarFiltros();
     });
-    document.getElementById('btnNuevoCliente').addEventListener('click', abrirModalCrear);
-    document.getElementById('closeModal').addEventListener('click', cerrarModalCliente);
-    document.getElementById('cancelarModal').addEventListener('click', cerrarModalCliente);
-    document.getElementById('guardarCliente').addEventListener('click', guardarClienteDesdeModal);
-    document.getElementById('closeEliminarModal').addEventListener('click', cerrarModalEliminar);
-    document.getElementById('cancelarEliminar').addEventListener('click', cerrarModalEliminar);
-    document.getElementById('confirmarEliminar').addEventListener('click', confirmarEliminar);
+    document.getElementById('btnNuevoCliente')?.addEventListener('click', abrirModalCrear);
+    document.getElementById('closeModal')?.addEventListener('click', cerrarModalCliente);
+    document.getElementById('cancelarModal')?.addEventListener('click', cerrarModalCliente);
+    document.getElementById('guardarCliente')?.addEventListener('click', guardarClienteDesdeModal);
+    document.getElementById('closeEliminarModal')?.addEventListener('click', cerrarModalEliminar);
+    document.getElementById('cancelarEliminar')?.addEventListener('click', cerrarModalEliminar);
+    document.getElementById('confirmarEliminar')?.addEventListener('click', confirmarEliminar);
     document.getElementById('logoutBtn')?.addEventListener('click', cerrarSesion);
     
-    // Cerrar modal al hacer clic fuera
-    document.getElementById('modalCliente').addEventListener('click', (e) => {
+    document.getElementById('modalCliente')?.addEventListener('click', (e) => {
         if (e.target === document.getElementById('modalCliente')) cerrarModalCliente();
     });
-    document.getElementById('modalEliminar').addEventListener('click', (e) => {
+    document.getElementById('modalEliminar')?.addEventListener('click', (e) => {
         if (e.target === document.getElementById('modalEliminar')) cerrarModalEliminar();
     });
 }

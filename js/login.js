@@ -1,77 +1,58 @@
-// ========== SIMULACIÓN DE LOGIN (temporal) ==========
-// TODO: Reemplazar con Supabase Auth después
+// ========== LOGIN CON SUPABASE ==========
+// ========== URL Y API KEY==========
+const supabaseClient = window.supabase.createClient(
+    'https://lxdcuvfpfuoeyzzgxhqx.supabase.co',
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx4ZGN1dmZwZnVvZXl6emd4aHF4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA4MDAyNDMsImV4cCI6MjA5NjM3NjI0M30.dWjQaPjDMK6HLvXzkgMcvhxnhc8kOQZ9TOZmrvVjU14'
+);
 
-const USUARIOS_SIMULADOS = {
-    'asesor@inmobiliaria.com': {
-        id: 'user-asesor-001',
-        nombre: 'María Gómez',
-        email: 'asesor@inmobiliaria.com',
-        rol: 'asesor'
-    },
-    'admin@inmobiliaria.com': {
-        id: 'user-admin-001',
-        nombre: 'Carlos Patrón',
-        email: 'admin@inmobiliaria.com',
-        rol: 'admin'
-    },
-    'pedro@inmobiliaria.com': {
-        id: 'user-asesor-002',
-        nombre: 'Pedro López',
-        email: 'pedro@inmobiliaria.com',
-        rol: 'asesor'
-    }
-};
-
-// Manejar el envío del formulario
-document.getElementById('loginForm').addEventListener('submit', function(e) {
+// MANEJO DEL ENVIO DEL FORMULARIO
+document.getElementById('loginForm').addEventListener('submit', async function(e) {
     e.preventDefault();
     
     const email = document.getElementById('email').value.trim();
     const password = document.getElementById('password').value;
     const errorDiv = document.getElementById('errorMessage');
     
-    // Ocultar error anterior
+    // OCULTAR ERROR ANTERIOR
     errorDiv.style.display = 'none';
     
-    // Validar que haya email
-    if (!email) {
-        errorDiv.textContent = '❌ Por favor ingresa tu correo electrónico';
+    // BUSCAR USUARIO Y VALIDAR CONTRASENA
+    const { data, error } = await supabaseClient.auth.signInWithPassword({
+        email: email,
+        password: password
+    });
+    
+    if (error) {
+        errorDiv.textContent = '❌ ' + error.message;
         errorDiv.style.display = 'block';
         return;
     }
     
-    // Buscar usuario (simulación)
-    const usuario = USUARIOS_SIMULADOS[email];
-    
-    if (usuario) {
-        // Login exitoso
-        console.log('✅ Login exitoso:', usuario);
+    // LOGIN EXITOSO
+    if (data.user) {
+        const { data: usuarioData } = await supabaseClient
+            .from('usuarios')
+            .select('*')
+            .eq('email', email)
+            .single();
         
-        // Guardar usuario en localStorage
+        const usuario = {
+            id: data.user.id,
+            email: email,
+            nombre: usuarioData?.nombre || email.split('@')[0],
+            rol: usuarioData?.rol || 'asesor'
+        };
+        // GUARDAR USUARIO LOCAL
         localStorage.setItem('usuario_actual', JSON.stringify(usuario));
         
-        // Mostrar mensaje de éxito
-        const submitBtn = document.querySelector('.btn-login');
-        const originalText = submitBtn.textContent;
-        submitBtn.textContent = '✅ Ingresando...';
-        submitBtn.disabled = true;
+        // MOSTRAR MENSAJE DE EXITO
+        const btn = document.querySelector('.btn-login');
+        btn.textContent = '✅ Ingresando...';
+        btn.disabled = true;
         
-        // Redirigir al CRM
+        // REDIRIGIR AL CRM
         setTimeout(() => {
             window.location.href = 'contactos.html';
         }, 1000);
-    } else {
-        // Usuario no encontrado
-        errorDiv.textContent = '❌ Correo o contraseña incorrectos. Si no tienes cuenta, solicita acceso al administrador.';
-        errorDiv.style.display = 'block';
     }
 });
-
-// Enlace de registro (temporal)
-document.getElementById('registroLink').addEventListener('click', function(e) {
-    e.preventDefault();
-    const errorDiv = document.getElementById('errorMessage');
-    errorDiv.textContent = '📝 Para solicitar acceso, contacta al administrador del sistema.';
-    errorDiv.style.display = 'block';
-});
-
