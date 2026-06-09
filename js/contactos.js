@@ -109,7 +109,7 @@ async function eliminarCliente(id) {
     alert('🗑️ Cliente eliminado');
 }
 
-//ELIMUNE JAVASCRIPTS PARA CONECTAR CON CLIENTES.JS PERO OCUPABA ESTA FUNCION
+
 // ========== FUNCIONES DE ROLES (TAGS) ==========
 function toggleRol(boton) {
     boton.classList.toggle('active');
@@ -346,8 +346,9 @@ function abrirModalCrear() {
     document.getElementById('modalCliente').classList.add('active');
 }
 
-function abrirModalEditar(id) {
-    const cliente = clientes.find(c => c.id === id);
+async function abrirModalEditar(id) {
+    const cliente = clientesGlobales.find(c => Number(c.id) === Number(id));
+    
     if (!cliente) return;
     
     clienteEditandoId = id;
@@ -366,7 +367,7 @@ function abrirModalEditar(id) {
     
     mostrarCampoAsesor();
     if (usuarioActual.rol === 'admin') {
-        cargarListaAsesores();
+        await cargarListaAsesores();
         document.getElementById('asesorSelect').value = cliente.asesor_id || '';
     }
     
