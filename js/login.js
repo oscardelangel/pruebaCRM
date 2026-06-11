@@ -51,7 +51,7 @@ document.getElementById('loginForm').addEventListener('submit', async function(e
         
         // REDIRIGIR AL CRM
         setTimeout(() => {
-            window.location.href = 'contactos.html';
+            window.location.href = 'index.html';
         }, 1000);
     }
 });
