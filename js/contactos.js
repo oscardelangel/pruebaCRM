@@ -20,7 +20,7 @@ async function verificarSesion() {
     const { data: profile } = await supabaseClient
         .from('usuarios')
         .select('*')
-        .eq('user_uuid', user.id)
+        .eq('id', user.id)
         .single();
     
     usuarioActual = profile;  // ✅ Guardas en memoria
@@ -207,8 +207,8 @@ function renderizarLista() {
                     <span>📞 ${escapeHtml(cliente.telefono || 'Sin teléfono')}</span>
                     <span>📍 ${escapeHtml(cliente.ciudad_preferida || 'Sin ciudad')}</span>
                     <span>💰 ${formatearPresupuesto(cliente.presupuesto_min, cliente.presupuesto_max)}</span>
-                    ${usuarioActual.rol === 'admin' && cliente.asesor_nombre ? 
-                        `<span>👤 Asesor: ${escapeHtml(cliente.asesor_nombre)}</span>` : ''}
+                    ${usuarioActual.rol === 'admin' && cliente.asesor_id ? 
+                        `<span>👤 Asesor: ${escapeHtml(cliente.asesor_id)}</span>` : ''}
                 </div>
                 <div class="cliente-roles">
                     ${generarTagsRoles(cliente.roles)}
@@ -422,8 +422,7 @@ async function guardarClienteDesdeModal() {
         es_recurrente: document.getElementById('esRecurrente').checked,
         cliente_desde: document.getElementById('clienteDesde').value,
         notas_generales: document.getElementById('notasGenerales').value.trim(),
-        asesor_id: asesorId,
-        asesor_nombre: asesorNombre
+        asesor_id: asesorId 
     };
     
     if (clienteEditandoId) {
