@@ -1,16 +1,20 @@
-// ========== VERIFICAR SESIÓN ==========
-let supabaseClient = null;
+import { createClient } from '@supabase/supabase-js'
+
 let usuarioActual = null;
+let supabaseClient = null; 
+
 
 // Inicializar Supabase
 function initSupabase() {
-    const SUPABASE_URL = 'https://lxdcuvfpfuoeyzzgxhqx.supabase.co';
-    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx4ZGN1dmZwZnVvZXl6emd4aHF4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA4MDAyNDMsImV4cCI6MjA5NjM3NjI0M30.dWjQaPjDMK6HLvXzkgMcvhxnhc8kOQZ9TOZmrvVjU14';  
-    supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
+    const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
+    // Crea el cliente con el nombre que usas: supabaseClient
+    supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 }
 
 // Verificar sesión y cargar usuario
 async function verificarSesion() {
+    
     // 1. Verificar sesión en Supabase Auth
    const { data: { session } } = await supabaseClient.auth.getSession();
 
@@ -35,6 +39,7 @@ let filtroRolesActivos = [];
 let filtroRecurrenteActivo = false;
 let textoBusqueda = '';
 
+
 // ========== CRUD CON SUPABASE ==========
 async function cargarDatos() {
     if (!supabaseClient) initSupabase();
@@ -48,8 +53,8 @@ async function cargarDatos() {
         return;
     }
     
-    clientes = data || [];
-    cargarClientesDesdeSupabase();
+    clientesGlobales = data || [];
+    renderizarLista();
     actualizarEstadisticas();
 }
 
@@ -90,7 +95,7 @@ async function actualizarCliente(id, datos) {
 }
 
 async function eliminarCliente(id) {
-    const cliente = clientes.find(c => c.id === id);
+    const cliente = clientesGlobales.find(c => c.id === id);
     if (!confirm(`¿Eliminar a ${cliente.nombre}?`)) return;
     
     const { error } = await supabaseClient
@@ -189,7 +194,7 @@ function renderizarLista() {
     const listaDiv = document.getElementById('listaClientes');
     
     if (!listaDiv) return;
-    
+
     if (filtrados.length === 0) {
         listaDiv.innerHTML = '<div class="vacio"><p>📭 No hay clientes</p></div>';
         return;
@@ -275,12 +280,12 @@ function formatearPresupuesto(min, max) {
 
 // ========== ESTADÍSTICAS ==========
 function actualizarEstadisticas() {
-    document.getElementById('totalClientes').textContent = clientes.length;
-    document.getElementById('totalArrendatarios').textContent = clientes.filter(c => c.roles && c.roles.includes('arrendatario')).length;
-    document.getElementById('totalDuenos').textContent = clientes.filter(c => c.roles && c.roles.includes('dueno')).length;
-    document.getElementById('totalInversionistas').textContent = clientes.filter(c => c.roles && c.roles.includes('inversionista')).length;
-    document.getElementById('totalCompradores').textContent = clientes.filter(c => c.roles && c.roles.includes('comprador')).length;
-    document.getElementById('totalRecurrentes').textContent = clientes.filter(c => c.es_recurrente === true).length;
+    document.getElementById('totalClientes').textContent = clientesGlobales.length;
+    document.getElementById('totalArrendatarios').textContent = clientesGlobales.filter(c => c.roles && c.roles.includes('arrendatario')).length;
+    document.getElementById('totalDuenos').textContent = clientesGlobales.filter(c => c.roles && c.roles.includes('dueno')).length;
+    document.getElementById('totalInversionistas').textContent = clientesGlobales.filter(c => c.roles && c.roles.includes('inversionista')).length;
+    document.getElementById('totalCompradores').textContent = clientesGlobales.filter(c => c.roles && c.roles.includes('comprador')).length;
+    document.getElementById('totalRecurrentes').textContent = clientesGlobales.filter(c => c.es_recurrente === true).length;
 }
 
 // ========== CARGAR ASESORES (para admin) ==========
@@ -291,8 +296,7 @@ async function cargarListaAsesores() {
         .eq('rol', 'asesor')
         .order('nombre');
     
-    if (error) return [];
-    
+    if (error) return [];    
     const select = document.getElementById('asesorSelect');
     if (!select) return [];
     
@@ -304,7 +308,7 @@ async function cargarListaAsesores() {
     select.innerHTML = '<option value="">Seleccionar asesor...</option>';
     data.forEach(asesor => {
         select.innerHTML += `<option value="${asesor.id}">${asesor.nombre}</option>`;
-    });
+   });
     
     return data;
 }
@@ -436,7 +440,7 @@ async function guardarClienteDesdeModal() {
 let clienteAEliminarId = null;
 
 function abrirModalEliminar(id) {
-    const cliente = clientes.find(c => c.id === id);
+    const cliente = clientesGlobales.find(c => c.id === id);
     if (cliente) {
         clienteAEliminarId = id;
         document.getElementById('mensajeEliminar').textContent = `¿Eliminar a "${cliente.nombre}"?`;
@@ -471,7 +475,7 @@ function mostrarUsuarioEnHeader() {
     const userRoleSpan = document.getElementById('userRole');
     
     if (!usuarioActual) {
-        console.error("❌ usuarioActual es null, no se puede mostrar");
+        console.error("❌ usuarioActual es null");
         return;  // Salir para evitar error
     }
     

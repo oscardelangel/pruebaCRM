@@ -1,9 +1,11 @@
-// ========== LOGIN CON SUPABASE ==========
-// ========== URL Y API KEY==========
-const supabaseClient = window.supabase.createClient(
-    'https://lxdcuvfpfuoeyzzgxhqx.supabase.co',
-    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx4ZGN1dmZwZnVvZXl6emd4aHF4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA4MDAyNDMsImV4cCI6MjA5NjM3NjI0M30.dWjQaPjDMK6HLvXzkgMcvhxnhc8kOQZ9TOZmrvVjU14'
-);
+import { createClient } from '@supabase/supabase-js'
+
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
+const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
+
+// Crea el cliente con el nombre que usas: supabaseClient
+const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
 
 // MANEJO DEL ENVIO DEL FORMULARIO
 document.getElementById('loginForm').addEventListener('submit', async function(e) {
