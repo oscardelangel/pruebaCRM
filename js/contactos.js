@@ -40,27 +40,6 @@ let filtroRecurrenteActivo = false;
 let textoBusqueda = '';
 
 
-// ========== CRUD CON SUPABASE ==========
-// async function cargarDatos() {
-//     if (!supabaseClient) initSupabase();
-//      const { data, error } = await supabaseClient
-//         .from('clientes')
-//         .select(`
-//             *,
-//             asesor:usuarios!clientes_asesor_id_fkey (nombre)
-//         `);
-    
-//     if (error) {
-//         console.error('Error al cargar clientes:', error);
-//         return;
-//     }
-    
-//                             console.log('Datos cargados:', data); // Para verificar que trae el nombre
-//     clientesGlobales = data || [];
-//     renderizarLista();
-//     actualizarEstadisticas();
-// }
-
 async function cargarDatos() {
     if (!supabaseClient) initSupabase();
     
@@ -533,6 +512,7 @@ window.guardarClienteDesdeModal = guardarClienteDesdeModal;
  
 // ========== INICIALIZACIÓN ==========
 async function inicializar() {
+    
     initSupabase();
     
     const sesionValida = await verificarSesion();
