@@ -41,21 +41,57 @@ let textoBusqueda = '';
 
 
 // ========== CRUD CON SUPABASE ==========
+// async function cargarDatos() {
+//     if (!supabaseClient) initSupabase();
+//      const { data, error } = await supabaseClient
+//         .from('clientes')
+//         .select(`
+//             *,
+//             asesor:usuarios!clientes_asesor_id_fkey (nombre)
+//         `);
+    
+//     if (error) {
+//         console.error('Error al cargar clientes:', error);
+//         return;
+//     }
+    
+//                             console.log('Datos cargados:', data); // Para verificar que trae el nombre
+//     clientesGlobales = data || [];
+//     renderizarLista();
+//     actualizarEstadisticas();
+// }
+
 async function cargarDatos() {
     if (!supabaseClient) initSupabase();
     
-    let query = supabaseClient.from('clientes').select('*');
-    
-    const { data, error } = await query;
-    
-    if (error) {
-        console.error('Error al cargar clientes:', error);
-        return;
+    try {
+        const { data, error } = await supabaseClient
+            .from('clientes')
+            .select(`
+                *,
+                asesor:usuarios!clientes_asesor_id_fkey (
+                    id,
+                    nombre
+                )
+            `);
+        
+        if (error) {
+            console.error('Error al cargar clientes:', error);
+            return;
+        }
+        
+        // Transformar los datos para tener asesor_nombre directamente
+        clientesGlobales = data.map(cliente => ({
+            ...cliente,
+            asesor_nombre: cliente.asesor?.nombre || null
+        }));
+        
+        renderizarLista();
+        actualizarEstadisticas();
+        
+    } catch (error) {
+        console.error('Error inesperado:', error);
     }
-    
-    clientesGlobales = data || [];
-    renderizarLista();
-    actualizarEstadisticas();
 }
 
 async function crearCliente(datos) {
@@ -213,7 +249,7 @@ function renderizarLista() {
                     <span>📍 ${escapeHtml(cliente.ciudad_preferida || 'Sin ciudad')}</span>
                     <span>💰 ${formatearPresupuesto(cliente.presupuesto_min, cliente.presupuesto_max)}</span>
                     ${usuarioActual.rol === 'admin' && cliente.asesor_id ? 
-                        `<span>👤 Asesor: ${escapeHtml(cliente.asesor_id)}</span>` : ''}
+                        `<span>👤 Asesor: ${escapeHtml(cliente.asesor_nombre|| cliente.asesor_id)}</span>` : ''}
                 </div>
                 <div class="cliente-roles">
                     ${generarTagsRoles(cliente.roles)}
@@ -233,7 +269,7 @@ async function cargarClientesDesdeSupabase() {
     try {
         const { data: clientes, error } = await supabaseClient
             .from('clientes')
-            .select('*')
+            .select('*,usuarios (nombre)')
             .order('nombre', { ascending: true });
         
         if (error) throw error;
@@ -486,7 +522,15 @@ function mostrarUsuarioEnHeader() {
         userRoleSpan.textContent = usuarioActual.rol === 'admin' ? '👑 Administrador' : '🏠 Asesor';
     }
 }
-
+// ========== 👇 EXPONER FUNCIONES GLOBALES (AL FINAL) 👇 ==========
+window.abrirModalEditar = abrirModalEditar;
+window.abrirModalEliminar = abrirModalEliminar;
+window.toggleRol = toggleRol;
+window.cerrarModalCliente = cerrarModalCliente;
+window.cerrarModalEliminar = cerrarModalEliminar;
+window.confirmarEliminar = confirmarEliminar;
+window.guardarClienteDesdeModal = guardarClienteDesdeModal;
+ 
 // ========== INICIALIZACIÓN ==========
 async function inicializar() {
     initSupabase();
