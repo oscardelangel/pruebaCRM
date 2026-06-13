@@ -242,28 +242,6 @@ function renderizarLista() {
     `).join('');
 }
 
-async function cargarClientesDesdeSupabase() {
-    console.log("Cargando clientes desde Supabase...");
-    
-    try {
-        const { data: clientes, error } = await supabaseClient
-            .from('clientes')
-            .select('*,usuarios (nombre)')
-            .order('nombre', { ascending: true });
-        
-        if (error) throw error;
-        
-        clientesGlobales = clientes || [];
-        console.log(`✅ ${clientesGlobales.length} clientes cargados`);
-        
-        renderizarLista();
-        
-    } catch (error) {
-        console.error("Error cargando clientes:", error);
-        document.getElementById('listaClientes').innerHTML = 
-            '<div class="vacio"><p>❌ Error al cargar clientes</p></div>';
-    }
-}
 
 function escapeHtml(text) {
     if (!text) return '';
