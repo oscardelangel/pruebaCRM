@@ -3,50 +3,49 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CRM Inmobiliario - Sistema de Gestión</title>
-    <!-- NUEVOS CSS -->
-    <!-- Index no necesita contactos.css porque es específico del CRM -->
+    <title>CRM Inmobiliario - Iniciar Sesión</title>
+    <!-- Reutiliza tus CSS existentes -->
+    <!-- CSS específico para login -->
+  <script type="module" crossorigin src="/pruebaCRM/assets/login-B-Vwn1u6.js"></script>
+  <link rel="modulepreload" crossorigin href="/pruebaCRM/assets/dist-BDHGYoBr.js">
+  <link rel="stylesheet" crossorigin href="/pruebaCRM/assets/login-DTmh9wZ-.css">
   <link rel="stylesheet" crossorigin href="/pruebaCRM/assets/componentes-DOM61V8u.css">
 </head>
-<body>
-    <div class="container">
-        <h1>🏢 CRM Inmobiliario</h1>
-        
-        <div class="menu-grid">
-            <!-- Botón 1: Actualizar sitio web (NO FUNCIONA AÚN) -->
-            <div class="menu-card card-web disabled" onclick="mostrarMensaje('Actualizar sitio web')">
-                <span class="menu-icon">🌐</span>
-                <h2>Actualizar Sitio Web</h2>
-                <p>Gestiona el contenido de la página web principal</p>
-                <span class="badge">Próximamente</span>
+<body class="login-body">
+    <div class="login-container">
+        <div class="login-card">
+            <div class="login-header">
+                <h1>🏢 CRM Inmobiliario</h1>
+                <p>Acceso para asesores y administradores</p>
             </div>
+            <div class="login-card-body">
+                <div id="errorMessage" class="alert alert-error" style="display: none;"></div>
+                
+                <!-- Mensaje de prueba (temporal) -->
+                <div class="alert alert-info">
+                    <strong>⚠️ Modo de pruebas</strong><br>
+                    Email: <code>asesor@inmobiliaria.com</code><br>
+                    Admin: <code>admin@inmobiliaria.com</code>
+                </div>
 
-            <!-- Botón 2: Contacto de clientes (SÍ FUNCIONA) -->
-            <a href="contactos.html" class="menu-card card-contactos">
-                <span class="menu-icon">📇</span>
-                <h2>Contacto de Clientes</h2>
-                <p>Gestiona todos tus clientes: crea, edita, busca y elimina contactos</p>
-                <span class="badge" style="background: #27ae60;">Activo ✅</span>
-            </a>
+                <form id="loginForm">
+                    <div class="form-group">
+                        <label for="email">📧 Correo electrónico</label>
+                        <input type="email" id="email" required placeholder="tu@email.com">
+                    </div>
+                    <div class="form-group">
+                        <label for="password">🔒 Contraseña</label>
+                        <input type="password" id="password" required placeholder="••••••••">
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-login">🚀 Iniciar Sesión</button>
+                </form>
 
-            <!-- Botón 3: Propiedades (NO FUNCIONA AÚN) -->
-            <div class="menu-card card-propiedades disabled" onclick="mostrarMensaje('Propiedades')">
-                <span class="menu-icon">🏠</span>
-                <h2>Propiedades</h2>
-                <p>Administra tu catálogo de inmuebles</p>
-                <span class="badge">Próximamente</span>
+                <div class="login-footer">
+                    <p>¿No tienes cuenta? <a href="#" id="registroLink">Solicitar acceso</a></p>
+                </div>
             </div>
-        </div>
-        
-        <div class="footer">
-            <p>Sistema CRM en construcción | Módulo de Contactos funcionando</p>
         </div>
     </div>
 
-    <script>
-        function mostrarMensaje(modulo) {
-            alert(`🚧 Módulo "${modulo}" en desarrollo\nPróximamente estará disponible.`);
-        }
-    </script>
-</body>
+    </body>
 </html>
