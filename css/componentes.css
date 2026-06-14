@@ -1,0 +1,447 @@
+/* ========== BOTONES ========== */
+.btn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: var(--border-radius-md);
+    cursor: pointer;
+    font-size: var(--font-size-md);
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.btn-primary {
+    background: var(--primary);
+    color: var(--white);
+}
+
+.btn-primary:hover {
+    background: var(--primary-dark);
+    transform: translateY(-2px);
+}
+
+.btn-danger {
+    background: var(--danger);
+    color: var(--white);
+}
+
+.btn-danger:hover {
+    background: #c0392b;
+}
+
+.btn-warning {
+    background: var(--warning);
+    color: var(--white);
+}
+
+.btn-secondary {
+    background: var(--gray);
+    color: var(--white);
+}
+
+.btn-secondary:hover {
+    background: #6c7a89;
+}
+
+.btn-sm {
+    padding: 5px 10px;
+    font-size: var(--font-size-sm);
+}
+
+/* ========== FORMULARIOS ========== */
+.form-group {
+    margin-bottom: var(--spacing-md);
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: var(--spacing-xs);
+    font-weight: 600;
+    color: var(--dark);
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: var(--border-radius-sm);
+    font-size: var(--font-size-md);
+    font-family: var(--font-family);
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+    outline: none;
+    border-color: var(--primary);
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--spacing-md);
+}
+
+/* ========== MODALES ========== */
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+    z-index: 1000;
+    justify-content: center;
+    align-items: center;
+}
+
+.modal.active {
+    display: flex;
+}
+
+.modal-content {
+    background: var(--white);
+    border-radius: var(--border-radius-lg);
+    width: 90%;
+    max-width: 600px;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: var(--shadow-modal);
+}
+
+.modal-header {
+    padding: var(--spacing-md);
+    border-bottom: 1px solid #ddd;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modal-header h2 {
+    margin: 0;
+    color: var(--dark);
+}
+
+.modal-close {
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    color: var(--gray);
+}
+
+.modal-body {
+    padding: var(--spacing-md);
+}
+
+.modal-footer {
+    padding: var(--spacing-md);
+    border-top: 1px solid #ddd;
+    display: flex;
+    justify-content: flex-end;
+    gap: var(--spacing-sm);
+}
+
+/* ========== BADGES ========== */
+.badge {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: var(--border-radius-sm);
+    font-size: var(--font-size-sm);
+    font-weight: 600;
+}
+
+.badge-arrendatario {
+    background: var(--arrendatario);
+    color: var(--white);
+}
+
+.badge-dueno {
+    background: var(--dueno);
+    color: var(--white);
+}
+
+.badge-inversionista {
+    background: var(--inversionista);
+    color: var(--white);
+}
+
+.badge-comprador {
+    background: var(--comprador);
+    color: var(--white);
+}
+
+.badge-recurrente {
+    background: var(--warning);
+    color: var(--white);
+}
+
+/* ========== TARJETAS ========== */
+.card {
+    background: var(--white);
+    border-radius: var(--border-radius-md);
+    padding: var(--spacing-md);
+    box-shadow: var(--shadow-sm);
+    margin-bottom: var(--spacing-sm);
+}
+
+/* ========== UTILIDADES ========== */
+.text-center {
+    text-align: center;
+}
+
+.text-right {
+    text-align: right;
+}
+
+.mt-1 { margin-top: var(--spacing-sm); }
+.mt-2 { margin-top: var(--spacing-md); }
+.mt-3 { margin-top: var(--spacing-lg); }
+
+.mb-1 { margin-bottom: var(--spacing-sm); }
+.mb-2 { margin-bottom: var(--spacing-md); }
+.mb-3 { margin-bottom: var(--spacing-lg); }
+
+/* ========== MENÚ PRINCIPAL (INDEX) ========== */
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.container h1 {
+    text-align: center;
+    color: black;
+    margin-bottom: 50px;
+    font-size: var(--font-size-3xl);
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+}
+
+.menu-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 30px;
+    margin-bottom: 40px;
+}
+
+.menu-card {
+    background: var(--white);
+    border-radius: var(--border-radius-lg);
+    padding: 50px 30px;
+    text-align: center;
+    cursor: pointer;
+    transition: transform 0.3s, box-shadow 0.3s;
+    box-shadow: var(--shadow-lg);
+    text-decoration: none;
+    display: block;
+}
+
+.menu-card:hover {
+    transform: translateY(-10px);
+    box-shadow: var(--shadow-modal);
+}
+
+.menu-icon {
+    font-size: 80px;
+    margin-bottom: 20px;
+    display: block;
+}
+
+.menu-card h2 {
+    font-size: var(--font-size-2xl);
+    margin-bottom: 15px;
+    color: var(--dark);
+}
+
+.menu-card p {
+    color: var(--gray);
+    font-size: var(--font-size-md);
+    line-height: 1.5;
+}
+
+.card-contactos {
+    border-bottom: 5px solid var(--primary);
+}
+
+.card-contactos .menu-icon {
+    color: var(--primary);
+}
+
+.card-propiedades {
+    border-bottom: 5px solid var(--danger);
+}
+
+.card-propiedades .menu-icon {
+    color: var(--danger);
+}
+
+.card-web {
+    border-bottom: 5px solid var(--secondary);
+}
+
+.card-web .menu-icon {
+    color: var(--secondary);
+}
+
+.disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+.disabled:hover {
+    transform: none;
+    box-shadow: var(--shadow-lg);
+}
+
+.footer {
+    text-align: center;
+    color: white;
+    margin-top: 50px;
+    opacity: 0.8;
+}
+
+@media (max-width: 768px) {
+    .container h1 {
+        font-size: var(--font-size-2xl);
+    }
+    
+    .menu-card {
+        padding: 30px 20px;
+    }
+    
+    .menu-icon {
+        font-size: 60px;
+    }
+    
+    .menu-card h2 {
+        font-size: var(--font-size-xl);
+    }
+
+    /* ========== ROLES / TAGS ========== */
+.roles-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 5px;
+}
+
+.rol-btn {
+    padding: 8px 16px;
+    border: 2px solid var(--rol-inactivo);
+    background: var(--white);
+    border-radius: 20px;
+    cursor: pointer;
+    transition: all 0.3s;
+    font-size: var(--font-size-sm);
+}
+
+.rol-btn:hover {
+    transform: scale(1.05);
+}
+
+.rol-btn.active {
+    border-width: 2px;
+}
+
+.rol-btn.active[data-rol="arrendatario"] {
+    background: var(--rol-arrendatario);
+    border-color: var(--rol-arrendatario);
+    color: var(--white);
+}
+
+.rol-btn.active[data-rol="dueno"] {
+    background: var(--rol-dueno);
+    border-color: var(--rol-dueno);
+    color: var(--white);
+}
+
+.rol-btn.active[data-rol="inversionista"] {
+    background: var(--rol-inversionista);
+    border-color: var(--rol-inversionista);
+    color: var(--white);
+}
+
+.rol-btn.active[data-rol="comprador"] {
+    background: var(--rol-comprador);
+    border-color: var(--rol-comprador);
+    color: var(--white);
+}
+
+.rol-inactivo {
+    background: var(--white);
+    border-color: var(--rol-inactivo);
+    color: var(--dark);
+}
+
+/* Tags en la lista de clientes */
+.cliente-roles {
+    display: flex;
+    gap: 5px;
+    flex-wrap: wrap;
+    margin-top: 5px;
+}
+
+.role-tag {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--white);
+}
+
+.role-tag-arrendatario { background: var(--rol-arrendatario); }
+.role-tag-dueno { background: var(--rol-dueno); }
+.role-tag-inversionista { background: var(--rol-inversionista); }
+.role-tag-comprador { background: var(--rol-comprador); }
+
+}
+
+/* ========== ESTILOS PARA ROLES (TAGS) EN EL MODAL ========== */
+.rol-btn {
+    padding: 8px 16px;
+    border: 2px solid #bdc3c7;
+    background: white;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: all 0.3s;
+    font-size: 12px;
+}
+
+.rol-btn.active[data-rol="arrendatario"] {
+    background: #2ecc71;
+    border-color: #2ecc71;
+    color: white;
+}
+
+.rol-btn.active[data-rol="dueno"] {
+    background: #3498db;
+    border-color: #3498db;
+    color: white;
+}
+
+.rol-btn.active[data-rol="inversionista"] {
+    background: #9b59b6;
+    border-color: #9b59b6;
+    color: white;
+}
+
+.rol-btn.active[data-rol="comprador"] {
+    background: #e67e22;
+    border-color: #e67e22;
+    color: white;
+}
+
+.rol-btn:not(.active) {
+    background: white;
+    border-color: #bdc3c7;
+    color: #333;
+}
+
+.rol-btn:hover {
+    transform: scale(1.05);
+}
