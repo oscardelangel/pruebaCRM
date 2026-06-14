@@ -15,6 +15,25 @@ document.getElementById('loginForm').addEventListener('submit', async function(e
     const password = document.getElementById('password').value;
     const errorDiv = document.getElementById('errorMessage');
     
+  // VALIDACIONES FRONTEND 
+    if (!email || !password) {
+        errorDiv.textContent = '❌ Email y contraseña son obligatorios';
+        errorDiv.style.display = 'block';
+        return;
+    }
+    
+    if (!email.includes('@')) {
+        errorDiv.textContent = '❌ Ingresa un email válido';
+        errorDiv.style.display = 'block';
+        return;
+    }
+    
+    if (password.length < 6) {
+        errorDiv.textContent = '❌ La contraseña debe tener al menos 6 caracteres';
+        errorDiv.style.display = 'block';
+        return;
+    }
+
     // OCULTAR ERROR ANTERIOR
     errorDiv.style.display = 'none';
     
