@@ -44,10 +44,13 @@
     --font-size-2xl: 24px;
     --font-size-3xl: 32px;
 
-    * Colores para roles (tags) */
-    --rol-arrendatario: #2ecc71;
+  /* Colores para roles (tags) */
+  
+    --rol-arrendatario: #2ecc71 ;
     --rol-dueno: #3498db;
     --rol-inversionista: #9b59b6;
     --rol-comprador: #e67e22;
     --rol-inactivo: #bdc3c7;
+  
+
 }
