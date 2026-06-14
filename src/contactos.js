@@ -457,7 +457,7 @@ async function cerrarSesion() {
     
     usuarioActual = null;
     const { error } = await supabaseClient.auth.signOut();
-    window.location.href = 'login.html';
+    window.location.href = 'index.html';
 }
 
 

@@ -72,7 +72,7 @@ document.getElementById('loginForm').addEventListener('submit', async function(e
         
         // REDIRIGIR AL CRM
         setTimeout(() => {
-            window.location.href = 'index.html';
+            window.location.href = 'menu.html';
         }, 1000);
     }
 });

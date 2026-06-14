@@ -3,13 +3,13 @@ import { defineConfig } from 'vite'
 export default defineConfig({
   base: '/pruebaCRM/',
   server: {
-    open: '/pruebaCRM/login.html'
+    open: '/pruebaCRM/index.html'
   },
   build: {
     rollupOptions: {
       input: {
+        menu: 'menu.html',
         index: 'index.html',
-        login: 'login.html',
         contactos: 'contactos.html'
       }
     }
