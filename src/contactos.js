@@ -459,7 +459,11 @@ async function cerrarSesion() {
     const { error } = await supabaseClient.auth.signOut();
     window.location.href = 'index.html';
 }
+// ========== REGRESAR MENU ==========
+async function regresarMenu() {
 
+    window.location.href = 'index.html';
+}
 
 // ========== MOSTRAR USUARIO EN HEADER ==========
 function mostrarUsuarioEnHeader() {
@@ -516,7 +520,8 @@ async function inicializar() {
     document.getElementById('closeEliminarModal')?.addEventListener('click', cerrarModalEliminar);
     document.getElementById('cancelarEliminar')?.addEventListener('click', cerrarModalEliminar);
     document.getElementById('confirmarEliminar')?.addEventListener('click', confirmarEliminar);
-    document.getElementById('logoutBtn')?.addEventListener('click', cerrarSesion);
+    document.getElementById('backBtn')?.addEventListener('click', regresarMenu);
+     document.getElementById('logoutBtn')?.addEventListener('click', cerrarSesion);
     
     document.getElementById('modalCliente')?.addEventListener('click', (e) => {
         if (e.target === document.getElementById('modalCliente')) cerrarModalCliente();

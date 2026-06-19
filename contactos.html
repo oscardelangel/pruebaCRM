@@ -21,6 +21,7 @@
                     <p>Administra arrendatarios, dueños, inversionistas y compradores</p>
                 </div>
                 <button id="logoutBtn" class="btn btn-secondary btn-sm">🚪 Cerrar sesión</button>
+                <button id="backBtn" class="btn btn-secondary btn-sm">🔄 Volver al menú</button>
             </div>
             <div class="user-info-responsive">
                 <span id="userName"></span>
@@ -60,6 +61,7 @@
 
         <!-- BARRA DE FILTROS -->
         <div class="filtros-bar">
+            <button class="btn btn-primary" id="btnNuevoCliente">➕ Nuevo Cliente</button>
             <div class="buscador">
                 <input type="text" id="buscador" placeholder="🔍 Buscar por nombre, email o ciudad...">
             </div>
@@ -83,7 +85,7 @@
                 </label>
             </div>
             <button class="btn btn-secondary btn-limpiar" id="limpiarFiltros">🗑️ Limpiar filtros</button>
-            <button class="btn btn-primary" id="btnNuevoCliente">➕ Nuevo Cliente</button>
+            
         </div>
 
         <!-- LISTA DE CLIENTES -->
@@ -112,15 +114,15 @@
                             <input type="text" id="nombre" required>
                         </div>
                         <div class="form-group">
-                            <label for="email">Email *</label>
-                            <input type="email" id="email" required>
+                            <label for="email">Email</label>
+                            <input type="email" id="email">
                         </div>
                     </div>
                     
                     <div class="form-row">
                         <div class="form-group">
-                            <label for="telefono">Teléfono</label>
-                            <input type="tel" id="telefono">
+                            <label for="telefono">Teléfono *</label>
+                            <input type="tel" id="telefono" required>
                         </div>
                     </div>
                     
@@ -145,12 +147,19 @@
                         <small style="color: var(--gray);">💡 Haz clic en los botones para activar múltiples roles</small>
                     </div>
                     
+                     <!-- Recurrente -->
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" id="esRecurrente"> Es cliente recurrente
+                        </label>
+                    </div>
+
                     <!-- Presupuestos -->
                     <div class="form-row">
-                        <div class="form-group">
+                       <!--  <div class="form-group">   ELIMINAR DE CSS Y DE BASE DE DATOS Y DE JS
                             <label for="presupuestoMin">Presupuesto mínimo</label>
                             <input type="number" id="presupuestoMin" placeholder="$">
-                        </div>
+                        </div>-->
                         <div class="form-group">
                             <label for="presupuestoMax">Presupuesto máximo</label>
                             <input type="number" id="presupuestoMax" placeholder="$">
@@ -167,13 +176,6 @@
                             <label for="clienteDesde">Cliente desde</label>
                             <input type="date" id="clienteDesde">
                         </div>
-                    </div>
-                    
-                    <!-- Recurrente -->
-                    <div class="form-group">
-                        <label>
-                            <input type="checkbox" id="esRecurrente"> Es cliente recurrente
-                        </label>
                     </div>
                     
                     <!-- Notas -->
