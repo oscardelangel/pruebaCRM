@@ -226,7 +226,7 @@ function renderizarLista() {
                     <span>📧 ${escapeHtml(cliente.email)}</span>
                     <span>📞 ${escapeHtml(cliente.telefono || 'Sin teléfono')}</span>
                     <span>📍 ${escapeHtml(cliente.ciudad_preferida || 'Sin ciudad')}</span>
-                    <span>💰 ${formatearPresupuesto(cliente.presupuesto_min, cliente.presupuesto_max)}</span>
+                    <span>💰 ${escapeHtml(cliente.presupuesto_max || 'No especificado')}</span>
                     ${usuarioActual.rol === 'admin' && cliente.asesor_id ? 
                         `<span>👤 Asesor: ${escapeHtml(cliente.asesor_nombre|| cliente.asesor_id)}</span>` : ''}
                 </div>
@@ -264,12 +264,6 @@ function generarTagsRoles(roles) {
     return roles.map(rol => `<span class="role-tag role-tag-${rol}">${nombreRoles[rol] || rol}</span>`).join('');
 }
 
-function formatearPresupuesto(min, max) {
-    if (!min && !max) return 'No especificado';
-    if (min && !max) return `$${min.toLocaleString()}+`;
-    if (!min && max) return `$${max.toLocaleString()}`;
-    return `$${min.toLocaleString()} - $${max.toLocaleString()}`;
-}
 
 // ========== ESTADÍSTICAS ==========
 function actualizarEstadisticas() {
@@ -354,7 +348,6 @@ async function abrirModalEditar(id) {
     document.getElementById('nombre').value = cliente.nombre || '';
     document.getElementById('email').value = cliente.email || '';
     document.getElementById('telefono').value = cliente.telefono || '';
-    document.getElementById('presupuestoMin').value = cliente.presupuesto_min || '';
     document.getElementById('presupuestoMax').value = cliente.presupuesto_max || '';
     document.getElementById('ciudadPreferida').value = cliente.ciudad_preferida || '';
     document.getElementById('clienteDesde').value = cliente.cliente_desde || '';
@@ -413,7 +406,6 @@ async function guardarClienteDesdeModal() {
         email: email,
         telefono: document.getElementById('telefono').value.trim(),
         roles: roles,
-        presupuesto_min: parseInt(document.getElementById('presupuestoMin').value) || null,
         presupuesto_max: parseInt(document.getElementById('presupuestoMax').value) || null,
         ciudad_preferida: document.getElementById('ciudadPreferida').value.trim(),
         es_recurrente: document.getElementById('esRecurrente').checked,
@@ -462,7 +454,7 @@ async function cerrarSesion() {
 // ========== REGRESAR MENU ==========
 async function regresarMenu() {
 
-    window.location.href = 'index.html';
+    window.location.href = 'menu.html';
 }
 
 // ========== MOSTRAR USUARIO EN HEADER ==========
